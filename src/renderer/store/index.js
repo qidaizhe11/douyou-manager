@@ -4,8 +4,12 @@ import Vuex from 'vuex'
 // import axios from 'axios'
 import Qs from 'qs'
 import { doubanApi } from '@/utils/config'
+// import router from '@/router'
+import router from '../router'
 
 Vue.use(Vuex)
+
+export const FETCH_LOGIN = 'FETCH_LOGIN'
 
 export const SET_USER_INFO = 'SET_USER_INFO'
   // export const USER_LOGIN_SUCCESS
@@ -18,6 +22,8 @@ export default new Vuex.Store({
       id: '',
       name: '',
       accessToken: '',
+      refreshToken: '',
+      tokenExpiredTime: null,
       isLogined: false
     }
   },
@@ -25,17 +31,27 @@ export default new Vuex.Store({
     [SET_USER_INFO](state, { user }) {
       state.user = user
     },
-    [LOGIN_SUCCESS](state, { data }) {
-      state.isLogined = true
-      state.id = data.id
-      state.accessToken = data.token
+    [LOGIN_SUCCESS](state, data) {
+      state.user.isLogined = true
+      state.user.id = data.douban_user_id
+      state.user.name = data.douban_user_name
+      state.user.accessToken = data.access_token
+      state.user.refreshToken = data.refresh_token
 
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('userId', data.id)
+      const dateNow = new Date()
+      dateNow.setSeconds(dateNow.getSeconds() + data.expires_in)
+      state.user.tokenExpiredTime = dateNow
+
+      localStorage.setItem('userId', state.user.id)
+      localStorage.setItem('accessToken', state.user.accessToken)
+      localStorage.setItem('tokenExpiredTime', state.user.tokenExpiredTime.toISOString())
+      localStorage.setItem('refreshToken', state.user.refreshToken)
+
+      router.push('/')
     }
   },
   actions: {
-    fetch_login({ commit, state }, data) {
+    [FETCH_LOGIN]({ commit, state }, data) {
       const postData = Qs.stringify({
         client_id: '0dad551ec0f84ed02907ff5c42e8ec70',
         client_secret: '9e8bb54dc3288cdf',
@@ -58,18 +74,9 @@ export default new Vuex.Store({
 
         response.json().then(data => {
           console.log('fetch_login, got data:', data)
+          commit(LOGIN_SUCCESS, data)
         })
       })
     }
   }
 })
-
-// axios.post(
-//   doubanApi.loginUrl, postData, {
-//     headers: {
-//       'Content-Type': 'application/x-www-form-urlencoded'
-//     }
-//   }
-// ).then(response => {
-//   console.log('fetch_login, response:', response)
-// })

@@ -22,6 +22,8 @@
 import Vue from 'vue'
 import { Input, Form, FormItem, Button } from 'element-ui'
 
+import { FETCH_LOGIN } from '@/store'
+
 Vue.use(Input)
 Vue.use(Form)
 Vue.use(FormItem)
@@ -39,7 +41,7 @@ export default {
   methods: {
     onSubmit() {
       console.log('Login, onSubmit, this.form:', this.form)
-      this.$store.dispatch('fetch_login', {
+      this.$store.dispatch(FETCH_LOGIN, {
         username: this.form.username,
         password: this.form.password
       })
