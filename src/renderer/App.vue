@@ -5,11 +5,30 @@
 </template>
 
 <script>
-  export default {
-    name: 'douban-manager'
-  }
+export default {
+  name: 'douban-manager'
+}
 </script>
 
 <style>
-  /* CSS */
+/* CSS */
+
+@import './css/base.css';
+
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /*text-align: center;*/
+  color: #2c3e50;
+  /*margin-top: 60px;*/
+  height: 100%;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  color: #333;
+}
 </style>
