@@ -22,7 +22,7 @@
 import Vue from 'vue'
 import { Input, Form, FormItem, Button } from 'element-ui'
 
-import { FETCH_LOGIN } from '@/store'
+import { FETCH_LOGIN } from '@/store/mutation-types'
 
 Vue.use(Input)
 Vue.use(Form)

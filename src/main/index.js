@@ -28,7 +28,9 @@ function createWindow() {
     }
   })
 
-  mainWindow.loadURL(winURL)
+  mainWindow.loadURL(winURL, {
+    userAgent: 'api-client/1 com.douban.frodo/4.18.0(99) Android/24 gemini Xiaomi MI 5  rom/miui6  network/wifi'
+  })
 
   mainWindow.on('closed', () => {
     mainWindow = null

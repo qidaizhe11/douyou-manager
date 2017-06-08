@@ -1,43 +1,53 @@
 <template>
   <div class="chat-list">
-    <div class="chat-list-item">
-      <div class="left-group">
-        <div class="avatar-container"></div>
-      </div>
-      <div class="right-group">
-        <div class="header-container">
-          <div class="username">盘风</div>
-          <div class="datetime">昨天</div>
+    <template v-for='item in chatList'>
+      <div class="chat-list-item">
+        <div class="left-group">
+          <div class="avatar-container">
+            <img :src="item.target_user.avatar" />
+          </div>
         </div>
-        <div class="content-container">
-          巴拉巴拉小魔仙知来日之可追
-        </div>
-      </div>
-    </div>
-  
-    <div class="chat-list-item">
-      <div class="left-group">
-        <div class="avatar-container"></div>
-      </div>
-      <div class="right-group">
-        <div class="header-container">
-          <div class="username">盘风</div>
-          <div class="datetime">昨天</div>
-        </div>
-        <div class="content-container">
-          巴拉巴拉小魔仙
+        <div class="right-group">
+          <div class="header-container">
+            <div class="username">{{item.target_user.name}}</div>
+            <!--<div class="datetime">{{item.last_message.create_time}}</div>-->
+            <div class="datetime">昨天</div>
+          </div>
+          <div class="content-container">
+            {{item.last_message.text}}
+          </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
 <script>
+
+import { mapState } from 'vuex'
+import { FETCH_GET_CHAT_LIST } from '@/store/mutation-types'
+
 export default {
   data() {
     return {
       userList: ''
     }
+  },
+  mounted() {
+    this.getChatList()
+  },
+  methods: {
+    getChatList() {
+      this.$store.dispatch(FETCH_GET_CHAT_LIST, {
+        start: 0,
+        count: 30
+      })
+    }
+  },
+  computed: {
+    ...mapState({
+      chatList: state => state.chat.chatList
+    })
   }
 }
 </script>
@@ -49,6 +59,7 @@ $background-color: lightgray;
   width: 100%;
   height: 100%;
   padding: 20px 0;
+  overflow-y: auto;
 
   background-color: $background-color;
 
@@ -73,10 +84,23 @@ $background-color: lightgray;
   .left-group {
     width: 20%;
     height: 100%;
+
+    .avatar-container {
+      width: 100%;
+      height: 100%;
+
+      img {
+        width: 48px;
+        height: 48px;
+        border-radius: 100%;
+        object-fit: cover;
+      }
+    }
   }
   .right-group {
     width: 80%;
     height: 100%;
+    padding-left: 10px;
     display: flex;
     flex-wrap: wrap;
     .header-container {
