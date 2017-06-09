@@ -1,15 +1,9 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import user from './user'
-import chat from './chat'
+import modules from './modules'
 
 Vue.use(Vuex)
-
-const modules = {
-  user,
-  chat
-}
 
 const store = new Vuex.Store({
   modules,

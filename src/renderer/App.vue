@@ -5,8 +5,13 @@
 </template>
 
 <script>
+import { INIT_USRE_INFO_FROM_STORAGE } from '@/store/mutation-types'
+
 export default {
-  name: 'douban-manager'
+  name: 'douban-manager',
+  mounted() {
+    this.$store.dispatch(INIT_USRE_INFO_FROM_STORAGE)
+  }
 }
 </script>
 

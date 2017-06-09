@@ -1,7 +1,7 @@
 import Qs from 'qs'
 import { doubanApi } from '@/utils/config'
 import router from '@/router'
-import * as types from '../mutation-types'
+import * as types from '@/store/mutation-types'
 
 const user = {
   state: {
@@ -13,8 +13,12 @@ const user = {
     isLogined: false
   },
   mutations: {
-    [types.SET_USER_INFO](state, { user }) {
-      state.user = user
+    [types.SET_USER_INFO](state, user) {
+      // state.user = user
+      console.log('action, SET_USER_INFO, user:', user)
+        // state = Object.assign({}, state, user)
+      state.id = user.id
+      state.accessToken = user.accessToken
     },
     [types.LOGIN_SUCCESS](state, data) {
       state.isLogined = true
@@ -61,6 +65,19 @@ const user = {
           console.log('fetch_login, got data:', data)
           commit(types.LOGIN_SUCCESS, data)
         })
+      })
+    },
+    [types.INIT_USRE_INFO_FROM_STORAGE]({ commit, state }) {
+      const userId = localStorage.getItem('userId')
+      const accessToken = localStorage.getItem('accessToken')
+      const refreshToken = localStorage.getItem('refreshToken')
+      const tokenExpiredTime = localStorage.getItem('tokenExpiredTime')
+
+      commit(types.SET_USER_INFO, {
+        id: userId,
+        accessToken,
+        refreshToken,
+        tokenExpiredTime: new Date(tokenExpiredTime)
       })
     }
   }

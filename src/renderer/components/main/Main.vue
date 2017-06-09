@@ -48,6 +48,7 @@ export default {
     }
   },
   mounted() {
+    // this.$store.dispatch(INIT_USRE_INFO_FROM_STORAGE)
     // this.getFollowing()
     // this.getNewRecs()
     // this.getHomeTimeline()

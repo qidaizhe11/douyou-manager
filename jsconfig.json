@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "./src/renderer/*"
+      ]
+    }
+  }
+  // "exclude": [
+  //   "node_modules"
+  // ]
+}
