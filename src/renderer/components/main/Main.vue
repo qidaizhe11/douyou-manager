@@ -19,6 +19,9 @@
     <div class="chat-list-container">
       <ChatList />
     </div>
+    <div class="chat-container">
+      <Chat />
+    </div>
   </div>
 </template>
 
@@ -31,6 +34,7 @@ import 'vue-awesome/icons'
 import Icon from 'vue-awesome/components/Icon'
 
 import ChatList from './chat-list/ChatList'
+import Chat from './chat/Chat'
 
 import { FETCH_GET_FOLLOWING, FETCH_GET_HOME_TIMELINE, FETCH_GET_HAS_NEW_RECS }
   from '@/store/mutation-types'
@@ -60,7 +64,8 @@ export default {
     }
   },
   components: {
-    ChatList
+    ChatList,
+    Chat
   }
 }
 </script>

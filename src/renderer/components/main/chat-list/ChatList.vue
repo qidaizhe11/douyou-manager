@@ -1,7 +1,7 @@
 <template>
   <div class="chat-list">
     <template v-for='item in chatList'>
-      <div class="chat-list-item">
+      <div class="chat-list-item" @click='onItemClick(item)'>
         <div class="left-group">
           <div class="avatar-container">
             <img :src="item.target_user.avatar" />
@@ -25,7 +25,8 @@
 <script>
 
 import { mapState } from 'vuex'
-import { FETCH_GET_CHAT_LIST } from '@/store/mutation-types'
+import { FETCH_GET_CHAT_LIST, FETCH_GET_CHAT_MESSAGES, SET_ACTIVE_CHAT_ID }
+  from '@/store/mutation-types'
 
 export default {
   data() {
@@ -41,6 +42,15 @@ export default {
       this.$store.dispatch(FETCH_GET_CHAT_LIST, {
         start: 0,
         count: 30
+      })
+    },
+    onItemClick(item) {
+      console.log('ChatList, onItemClick, item:', item)
+      const chatId = item.conversation_id
+      this.$store.commit(SET_ACTIVE_CHAT_ID, chatId)
+      this.$store.dispatch(FETCH_GET_CHAT_MESSAGES, {
+        chatId,
+        count: 20
       })
     }
   },
@@ -61,6 +71,12 @@ $background-color: lightgray;
   padding: 20px 0;
   overflow-y: auto;
 
+  &::-webkit-scrollbar {
+    width: 9px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: darkcyan;
+  }
   background-color: $background-color;
 
   display: flex;

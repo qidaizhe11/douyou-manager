@@ -4,7 +4,7 @@ const DOUBAN_API_ROOT = 'https://frodo.douban.com'
 export const doubanApi = {
   loginUrl: DOUBAN_API_ROOT + '/service/auth2/token',
   getChatListUrl: DOUBAN_API_ROOT + '/api/v2/chat_list',
-  // getChatListUrl: DOUBAN_API_ROOT + '/api/v2/user/78709139/following'
+  getChatMessagesUrl: DOUBAN_API_ROOT + '/api/v2/im/messages',
   getFollowingUrl(userId) {
     return DOUBAN_API_ROOT + `/api/v2/user/${userId}/following`
   },

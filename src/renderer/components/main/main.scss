@@ -20,6 +20,10 @@ $background-color: darkslategrey;
   height: 100%;
 }
 
+.chat-container {
+  flex: 1;
+}
+
 .left-side-container .top-group,
 .left-side-container .bottom-group {
   width: 100%;
