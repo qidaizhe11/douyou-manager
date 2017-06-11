@@ -16,6 +16,7 @@ const chat = {
       }
       */
     },
+    chatDetail: null,
     activeChatId: ''
   },
   mutations: {
@@ -31,6 +32,7 @@ const chat = {
     },
     [types.GET_CHAT_MESSAGES_SUCCESS](state, { messages, chatId }) {
       state.chatDetails[chatId] = messages
+      state.chatDetail = messages
     },
     [types.SET_ACTIVE_CHAT_ID](state, chatId) {
       state.activeChatId = chatId
@@ -104,6 +106,22 @@ const chat = {
       return state.chatList.find(item => {
         return item.conversation_id === chatId
       })
+    },
+    activeChatDetail(state, getters) {
+      const chatId = state.activeChatId
+
+      console.log('getter, activeChatDetail, state:', state)
+
+      // state.chatDetails.map(item => {})
+      // Object.keys(state.chatDetails).map(key => {
+      //   console.log('key:', key, 'is string?', (typeof key === 'string'))
+      // })
+
+      if (!chatId || !state.chatDetails[chatId]) {
+        return
+      }
+
+      return state.chatDetails[chatId]
     }
   }
 }
