@@ -5,7 +5,7 @@
         {{activeChat && activeChat.target_user.name}}
       </div>
     </div>
-    <div class="chat-history-container" ref="historyContainer">
+    <div class="chat-history-container" ref="messageListContainer">
       <template v-if="chatDetail">
         <template v-for="message in chatDetail" v-if="message.type === 0">
           <div :class="['message-container', {'message-container-me': message.isMe}]">
@@ -30,7 +30,7 @@ import { mapGetters, mapState } from 'vuex'
 export default {
   data() {
     return {
-
+      isLoading: false
     }
   },
   computed: {
@@ -57,10 +57,42 @@ export default {
       }
     })
   },
+  mounted() {
+    this.scrollHandler = function () {
+      if (!this.isLoading) {
+        this.attemptLoad()
+      }
+    }.bind(this)
+
+    const elm = this.$refs.messageListContainer
+    elm.addEventListener('scroll', this.scrollHandler)
+  },
+  activated() {
+    const elm = this.$refs.messageListContainer
+    elm.addEventListener('scroll', this.scrollHandler)
+  },
+  deactivated() {
+    this.isLoading = false
+    const elm = this.$refs.messageListContainer
+    elm.removeEventListener('scroll', this.scrollHandler)
+  },
+  methods: {
+    attemptLoad() {
+      const elm = this.$refs.messageListContainer
+      const currentDistance = isNaN(elm.scrollTop) ? elm.pageYOffset : elm.scrollTop
+      if (currentDistance <= 50) {
+        // this.isLoading = true
+        console.log('reach top, need load more.')
+        // this.onLoadMore()
+      } else {
+        this.isLoading = false
+      }
+    }
+  },
   watch: {
     chatDetail() {
       this.$nextTick(() => {
-        const container = this.$refs.historyContainer
+        const container = this.$refs.messageListContainer
         container.scrollTop = container.scrollHeight
       })
     }
