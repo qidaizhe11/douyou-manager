@@ -6,9 +6,9 @@
       </div>
     </div>
     <div class="chat-history-container" ref="messageListContainer">
-      <template v-if="chatDetail">
-        <template v-for="message in chatDetail" v-if="message.type === 0">
-          <div :class="['message-container', {'message-container-me': message.isMe}]">
+      <template v-if="messages">
+        <template v-for="message in messages" v-if="message.type === 0">
+          <div :class="['message-container', {'message-container-me': message.isMe}]" :ref="'message-' + message.id">
             <div class="avatar-container">
               <img :src="message.author.avatar" />
             </div>
@@ -26,6 +26,8 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex'
+import _ from 'lodash'
+import { FETCH_GET_CHAT_MESSAGES } from '@/store/mutation-types'
 
 export default {
   data() {
@@ -34,34 +36,34 @@ export default {
     }
   },
   computed: {
+    messages() {
+      if (!this.activeChatDetail) {
+        return
+      }
+
+      const userId = this.userId
+
+      return this.activeChatDetail.messages.map(message => {
+        if (message.author.id && message.author.id === userId) {
+          message.isMe = true
+        }
+        return message
+      })
+    },
     ...mapGetters([
       'activeChat',
       'activeChatDetail'
     ]),
     ...mapState({
       userId: state => state.user.id,
-      chatId: state => state.chat.activeChatId,
-      // chatDetail: state => state.chat.chatDetail
-      chatDetail: state => {
-        const chatDetail = state.chat.chatDetail
-        if (!chatDetail) {
-          return
-        }
-
-        return chatDetail.map(item => {
-          if (item.author.id && item.author.id === state.user.id) {
-            item.isMe = true
-          }
-          return item
-        })
-      }
+      chatId: state => state.chat.activeChatId
     })
   },
   mounted() {
     this.scrollHandler = function () {
-      if (!this.isLoading) {
-        this.attemptLoad()
-      }
+      // if (!this.isLoading) {
+      this.attemptLoad()
+      // }
     }.bind(this)
 
     const elm = this.$refs.messageListContainer
@@ -76,22 +78,54 @@ export default {
     const elm = this.$refs.messageListContainer
     elm.removeEventListener('scroll', this.scrollHandler)
   },
+  updated() {
+    const elm = this.$refs.messageListContainer
+
+    if (!this.activeChatDetail) {
+      return
+    }
+
+    const lastEarliestMessageId = this.activeChatDetail.lastEarliestMessageId
+    const messageElm = this.$refs['message-' + lastEarliestMessageId]
+    if (lastEarliestMessageId && messageElm && messageElm.length > 0) {
+      elm.scrollTop = messageElm[0].offsetTop - messageElm[0].offsetHeight
+      console.log('Chat, updated, messageElm:', messageElm)
+
+      console.log('Chat, updated, scrollTop here:', elm.scrollTop)
+    }
+  },
   methods: {
-    attemptLoad() {
+    attemptLoad: _.debounce(function () {
       const elm = this.$refs.messageListContainer
       const currentDistance = isNaN(elm.scrollTop) ? elm.pageYOffset : elm.scrollTop
+      // const currentDistance = elm.scrollHeight - elm.scrollTop - elm.offsetHeight
       if (currentDistance <= 50) {
-        // this.isLoading = true
+        this.isLoading = true
         console.log('reach top, need load more.')
         // this.onLoadMore()
+        this.onLoadMoreRequest()
       } else {
         this.isLoading = false
       }
+    }, 500),
+    onLoadMoreRequest() {
+      const messages = this.messages
+      if (!messages || !messages.length) {
+        return
+      }
+
+      const earliestMessageId = messages[0].id
+      this.$store.dispatch(FETCH_GET_CHAT_MESSAGES, {
+        chatId: this.chatId,
+        earliestMessageId,
+        count: 20
+      })
     }
   },
   watch: {
-    chatDetail() {
+    chatId() {
       this.$nextTick(() => {
+        // this.lastEarliestMessageId = ''
         const container = this.$refs.messageListContainer
         container.scrollTop = container.scrollHeight
       })

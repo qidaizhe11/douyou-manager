@@ -1,5 +1,6 @@
 import * as types from '@/store/mutation-types'
 import Api from '@/api'
+import Vue from 'vue'
 
 const chat = {
   state: {
@@ -12,11 +13,12 @@ const chat = {
       id: {
         id,
         messages: [],
-        lastMessage
+        lastMessageId,
+        earliestMessageId,
+        lastEarliestMessageId
       }
       */
     },
-    chatDetail: null,
     activeChatId: ''
   },
   mutations: {
@@ -30,9 +32,28 @@ const chat = {
       state.count += count
       state.total = total
     },
-    [types.GET_CHAT_MESSAGES_SUCCESS](state, { messages, chatId }) {
-      state.chatDetails[chatId] = messages
-      state.chatDetail = messages
+    [types.GET_CHAT_MESSAGES_SUCCESS](state, { messages, chatId, isAttached }) {
+      // state.chatDetails[chatId] = messages
+      // state.chatDetail = messages
+      const chatDetail = state.chatDetails[chatId]
+      let messagesAfterMerge = []
+      if (isAttached && chatDetail) {
+        messagesAfterMerge = messages.concat(chatDetail.messages)
+      } else {
+        messagesAfterMerge = messages
+      }
+
+      if (chatDetail) {
+        if (chatDetail.messages.length > 0) {
+          chatDetail.lastEarliestMessageId = chatDetail.messages[0].id
+        }
+        chatDetail.messages = messagesAfterMerge
+      } else {
+        Vue.set(state.chatDetails, chatId, {
+          id: chatId,
+          messages: messagesAfterMerge
+        })
+      }
     },
     [types.SET_ACTIVE_CHAT_ID](state, chatId) {
       state.activeChatId = chatId
@@ -57,15 +78,18 @@ const chat = {
     },
     [types.FETCH_GET_CHAT_MESSAGES]({ commit, state }, options) {
       const token = localStorage.getItem('accessToken')
+      const isAttached = !!options.earliestMessageId
       Api.fetchGetChatMessages({
         chatId: options.chatId,
+        earliestMessageId: options.earliestMessageId,
         count: options.count,
         token
       }).then(data => {
         console.log('fetchGetChatMessages, got data:', data)
         commit(types.GET_CHAT_MESSAGES_SUCCESS, {
           messages: data.messages,
-          chatId: options.chatId
+          chatId: options.chatId,
+          isAttached
         })
       })
     },
@@ -109,13 +133,6 @@ const chat = {
     },
     activeChatDetail(state, getters) {
       const chatId = state.activeChatId
-
-      console.log('getter, activeChatDetail, state:', state)
-
-      // state.chatDetails.map(item => {})
-      // Object.keys(state.chatDetails).map(key => {
-      //   console.log('key:', key, 'is string?', (typeof key === 'string'))
-      // })
 
       if (!chatId || !state.chatDetails[chatId]) {
         return

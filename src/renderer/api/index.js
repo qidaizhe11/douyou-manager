@@ -23,12 +23,12 @@ export default {
       }
     })
   },
-  fetchGetChatMessages({ chatId, start, count, token }) {
+  fetchGetChatMessages({ chatId, earliestMessageId, start, count, token }) {
     const params = Qs.stringify({
       // start: start,
       type: 'private',
       cid: chatId,
-      max_id: 0,
+      max_id: earliestMessageId || 0,
       count: count,
       apikey: '0dad551ec0f84ed02907ff5c42e8ec70',
       os_rom: 'miui6',
