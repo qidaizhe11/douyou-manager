@@ -27,32 +27,39 @@
 <script>
 import { mapGetters, mapState } from 'vuex'
 import _ from 'lodash'
-import { FETCH_GET_CHAT_MESSAGES } from '@/store/mutation-types'
+import { FETCH_GET_CHAT_MESSAGES_MORE } from '@/store/mutation-types'
 
 export default {
   data() {
     return {
-      isLoading: false
+      // isLoading: false
     }
   },
   computed: {
     messages() {
-      if (!this.activeChatDetail) {
+      if (!this.activeChatMessages) {
         return
       }
 
       const userId = this.userId
 
-      return this.activeChatDetail.messages.map(message => {
+      return this.activeChatMessages.messageList.map(message => {
         if (message.author.id && message.author.id === userId) {
           message.isMe = true
         }
         return message
       })
     },
+    isMessagesLoading() {
+      if (!this.activeChatMessages) {
+        return false
+      }
+
+      return this.activeChatMessages.isLoading
+    },
     ...mapGetters([
       'activeChat',
-      'activeChatDetail'
+      'activeChatMessages'
     ]),
     ...mapState({
       userId: state => state.user.id,
@@ -61,9 +68,9 @@ export default {
   },
   mounted() {
     this.scrollHandler = function () {
-      // if (!this.isLoading) {
-      this.attemptLoad()
-      // }
+      if (!this.isMessagesLoading) {
+        this.attemptLoad()
+      }
     }.bind(this)
 
     const elm = this.$refs.messageListContainer
@@ -81,17 +88,19 @@ export default {
   updated() {
     const elm = this.$refs.messageListContainer
 
-    if (!this.activeChatDetail) {
+    if (!this.activeChatMessages) {
       return
     }
 
-    const lastEarliestMessageId = this.activeChatDetail.lastEarliestMessageId
-    const messageElm = this.$refs['message-' + lastEarliestMessageId]
-    if (lastEarliestMessageId && messageElm && messageElm.length > 0) {
-      elm.scrollTop = messageElm[0].offsetTop - messageElm[0].offsetHeight
-      console.log('Chat, updated, messageElm:', messageElm)
-
-      console.log('Chat, updated, scrollTop here:', elm.scrollTop)
+    if (this.activeChatMessages.currentPage === 0) {
+      elm.scrollTop = elm.scrollHeight
+    } else {
+      const scrollToMessageId = this.activeChatMessages.scrollToMessageId
+      const messageElm = this.$refs['message-' + scrollToMessageId]
+      if (scrollToMessageId && messageElm && messageElm.length > 0) {
+        elm.scrollTop = messageElm[0].offsetTop - messageElm[0].offsetHeight
+        console.log('Chat, updated, messageElm:', messageElm)
+      }
     }
   },
   methods: {
@@ -100,12 +109,8 @@ export default {
       const currentDistance = isNaN(elm.scrollTop) ? elm.pageYOffset : elm.scrollTop
       // const currentDistance = elm.scrollHeight - elm.scrollTop - elm.offsetHeight
       if (currentDistance <= 50) {
-        this.isLoading = true
         console.log('reach top, need load more.')
-        // this.onLoadMore()
         this.onLoadMoreRequest()
-      } else {
-        this.isLoading = false
       }
     }, 500),
     onLoadMoreRequest() {
@@ -114,20 +119,11 @@ export default {
         return
       }
 
-      const earliestMessageId = messages[0].id
-      this.$store.dispatch(FETCH_GET_CHAT_MESSAGES, {
+      const earliestMessageId = this.activeChatMessages.earliestMessageId
+      this.$store.dispatch(FETCH_GET_CHAT_MESSAGES_MORE, {
         chatId: this.chatId,
         earliestMessageId,
         count: 20
-      })
-    }
-  },
-  watch: {
-    chatId() {
-      this.$nextTick(() => {
-        // this.lastEarliestMessageId = ''
-        const container = this.$refs.messageListContainer
-        container.scrollTop = container.scrollHeight
       })
     }
   }

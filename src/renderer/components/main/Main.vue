@@ -36,8 +36,8 @@ import Icon from 'vue-awesome/components/Icon'
 import ChatList from './chat-list/ChatList'
 import Chat from './chat/Chat'
 
-import { FETCH_GET_FOLLOWING, FETCH_GET_HOME_TIMELINE, FETCH_GET_HAS_NEW_RECS }
-  from '@/store/mutation-types'
+// import { FETCH_GET_FOLLOWING, FETCH_GET_HOME_TIMELINE, FETCH_GET_HAS_NEW_RECS }
+// from '@/store/mutation-types'
 
 Vue.component('icon', Icon)
 
@@ -54,15 +54,15 @@ export default {
     // this.getHomeTimeline()
   },
   methods: {
-    getFollowing() {
-      this.$store.dispatch(FETCH_GET_FOLLOWING)
-    },
-    getHomeTimeline() {
-      this.$store.dispatch(FETCH_GET_HOME_TIMELINE)
-    },
-    getNewRecs() {
-      this.$store.dispatch(FETCH_GET_HAS_NEW_RECS)
-    }
+    // getFollowing() {
+    //   this.$store.dispatch(FETCH_GET_FOLLOWING)
+    // },
+    // getHomeTimeline() {
+    //   this.$store.dispatch(FETCH_GET_HOME_TIMELINE)
+    // },
+    // getNewRecs() {
+    //   this.$store.dispatch(FETCH_GET_HAS_NEW_RECS)
+    // }
   },
   components: {
     ChatList,

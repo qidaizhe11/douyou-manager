@@ -25,7 +25,7 @@
 <script>
 
 import { mapState } from 'vuex'
-import { FETCH_GET_CHAT_LIST, FETCH_GET_CHAT_MESSAGES, SET_ACTIVE_CHAT_ID }
+import { FETCH_GET_CHAT_LIST, FETCH_GET_CHAT_MESSAGES, CHANGE_ACTIVE_CHAT_ID }
   from '@/store/mutation-types'
 
 export default {
@@ -47,7 +47,7 @@ export default {
     onItemClick(item) {
       console.log('ChatList, onItemClick, item:', item)
       const chatId = item.conversation_id
-      this.$store.commit(SET_ACTIVE_CHAT_ID, chatId)
+      this.$store.dispatch(CHANGE_ACTIVE_CHAT_ID, { chatId })
       this.$store.dispatch(FETCH_GET_CHAT_MESSAGES, {
         chatId,
         count: 20

@@ -7,8 +7,8 @@
         "./src/renderer/*"
       ]
     }
-  }
-  // "exclude": [
-  //   "node_modules"
-  // ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }
