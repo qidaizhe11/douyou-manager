@@ -25,7 +25,7 @@
 <script>
 
 import { mapState } from 'vuex'
-import { FETCH_GET_CHAT_LIST, FETCH_GET_CHAT_MESSAGES, CHANGE_ACTIVE_CHAT_ID }
+import { FETCH_GET_CHAT_LIST, FETCH_GET_CHAT_MESSAGES_IF_NEEDED, CHANGE_ACTIVE_CHAT_ID }
   from '@/store/mutation-types'
 
 export default {
@@ -48,7 +48,7 @@ export default {
       console.log('ChatList, onItemClick, item:', item)
       const chatId = item.conversation_id
       this.$store.dispatch(CHANGE_ACTIVE_CHAT_ID, { chatId })
-      this.$store.dispatch(FETCH_GET_CHAT_MESSAGES, {
+      this.$store.dispatch(FETCH_GET_CHAT_MESSAGES_IF_NEEDED, {
         chatId,
         count: 20
       })
@@ -63,7 +63,10 @@ export default {
 </script>
 
 <style lang="scss">
-$background-color: lightgray;
+@import '~css/variables';
+
+$background-color: $chatlist-background-color;
+$scrollbar-color: $chatlist-scrollbar-color;
 
 .chat-list {
   width: 100%;
@@ -72,10 +75,10 @@ $background-color: lightgray;
   overflow-y: auto;
 
   &::-webkit-scrollbar {
-    width: 9px;
+    width: 8px;
   }
   &::-webkit-scrollbar-thumb {
-    background-color: darkcyan;
+    background-color: $scrollbar-color;
   }
   background-color: $background-color;
 

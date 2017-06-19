@@ -15,10 +15,8 @@ export default {
 }
 </script>
 
-<style>
-/* CSS */
-
-@import './css/base.css';
+<style lang="scss">
+@import './css/base.scss';
 
 #app {
   /*font-family: 'Avenir', Helvetica, Arial, sans-serif;*/

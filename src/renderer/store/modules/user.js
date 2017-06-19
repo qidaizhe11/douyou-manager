@@ -16,7 +16,7 @@ const user = {
     [types.SET_USER_INFO](state, user) {
       // state.user = user
       console.log('action, SET_USER_INFO, user:', user)
-        // state = Object.assign({}, state, user)
+      // state = Object.assign({}, state, user)
       state.id = user.id
       state.accessToken = user.accessToken
     },
@@ -40,7 +40,7 @@ const user = {
     }
   },
   actions: {
-    [types.FETCH_LOGIN]({ commit, state }, data) {
+    [types.FETCH_POST_LOGIN]({ commit, state }, data) {
       const postData = Qs.stringify({
         client_id: '0dad551ec0f84ed02907ff5c42e8ec70',
         client_secret: '9e8bb54dc3288cdf',

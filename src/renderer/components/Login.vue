@@ -22,7 +22,7 @@
 import Vue from 'vue'
 import { Input, Form, FormItem, Button } from 'element-ui'
 
-import { FETCH_LOGIN } from '@/store/mutation-types'
+import { FETCH_POST_LOGIN } from '@/store/mutation-types'
 
 Vue.use(Input)
 Vue.use(Form)
@@ -41,7 +41,7 @@ export default {
   methods: {
     onSubmit() {
       console.log('Login, onSubmit, this.form:', this.form)
-      this.$store.dispatch(FETCH_LOGIN, {
+      this.$store.dispatch(FETCH_POST_LOGIN, {
         username: this.form.username,
         password: this.form.password
       })

@@ -7,15 +7,23 @@
     </div>
     <div class="chat-history-container" ref="messageListContainer">
       <template v-if="messages">
-        <template v-for="message in messages" v-if="message.type === 0">
-          <div :class="['message-container', {'message-container-me': message.isMe}]" :ref="'message-' + message.id">
-            <div class="avatar-container">
-              <img :src="message.author.avatar" />
+        <template v-for="message in messages">
+          <template v-if="message.type === 0">
+            <div :class="['message-container', {'message-container-me': message.isMe}]"
+                 :ref="'message-' + message.id">
+              <div class="avatar-container">
+                <img :src="message.author.avatar"/>
+              </div>
+              <div class="content-container">
+                {{message.text}}
+              </div>
             </div>
-            <div class="content-container">
-              {{message.text}}
+          </template>
+          <template v-else>
+            <div class="time-container">
+              {{message.timeStr}}
             </div>
-          </div>
+          </template>
         </template>
       </template>
     </div>
@@ -25,184 +33,225 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
-import _ from 'lodash'
-import { FETCH_GET_CHAT_MESSAGES_MORE } from '@/store/mutation-types'
+  import {mapGetters, mapState} from 'vuex'
+  import _ from 'lodash'
+  import {FETCH_GET_CHAT_MESSAGES_MORE} from '@/store/mutation-types'
 
-export default {
-  data() {
-    return {
-      // isLoading: false
-    }
-  },
-  computed: {
-    messages() {
-      if (!this.activeChatMessages) {
-        return
+  export default {
+    data() {
+      return {
+        // isLoading: false
       }
-
-      const userId = this.userId
-
-      return this.activeChatMessages.messageList.map(message => {
-        if (message.author.id && message.author.id === userId) {
-          message.isMe = true
+    },
+    computed: {
+      messages() {
+        if (!this.activeChatMessages) {
+          return
         }
-        return message
+
+        const userId = this.userId
+
+        const messageList = this.activeChatMessages.messageList
+        let messages = []
+
+        let lastMessageDateTime = null
+        messageList.map(message => {
+          if (message.author.id && message.author.id === userId) {
+            message.isMe = true
+          }
+
+          const timeOfMessage = new Date(message.create_time)
+
+          if (!lastMessageDateTime) {
+            lastMessageDateTime = timeOfMessage
+          }
+
+          // 间隔超过45秒，插入时间
+          if (timeOfMessage - lastMessageDateTime > 45 * 1000) {
+            messages.push({
+              type: 100,
+              isTime: true,
+              time: timeOfMessage,
+              timeStr: timeOfMessage.toLocaleString()
+            })
+          }
+
+          messages.push(message)
+          lastMessageDateTime = timeOfMessage
+        })
+
+        return messages
+      },
+      isMessagesLoading() {
+        if (!this.activeChatMessages) {
+          return false
+        }
+
+        return this.activeChatMessages.isLoading
+      },
+      ...mapGetters([
+        'activeChat',
+        'activeChatMessages'
+      ]),
+      ...mapState({
+        userId: state => state.user.id,
+        chatId: state => state.chat.activeChatId
       })
     },
-    isMessagesLoading() {
-      if (!this.activeChatMessages) {
-        return false
-      }
+    mounted() {
+      this.scrollHandler = function () {
+        if (!this.isMessagesLoading) {
+          this.attemptLoad()
+        }
+      }.bind(this)
 
-      return this.activeChatMessages.isLoading
-    },
-    ...mapGetters([
-      'activeChat',
-      'activeChatMessages'
-    ]),
-    ...mapState({
-      userId: state => state.user.id,
-      chatId: state => state.chat.activeChatId
-    })
-  },
-  mounted() {
-    this.scrollHandler = function () {
-      if (!this.isMessagesLoading) {
-        this.attemptLoad()
-      }
-    }.bind(this)
-
-    const elm = this.$refs.messageListContainer
-    elm.addEventListener('scroll', this.scrollHandler)
-  },
-  activated() {
-    const elm = this.$refs.messageListContainer
-    elm.addEventListener('scroll', this.scrollHandler)
-  },
-  deactivated() {
-    this.isLoading = false
-    const elm = this.$refs.messageListContainer
-    elm.removeEventListener('scroll', this.scrollHandler)
-  },
-  updated() {
-    const elm = this.$refs.messageListContainer
-
-    if (!this.activeChatMessages) {
-      return
-    }
-
-    if (this.activeChatMessages.currentPage === 0) {
-      elm.scrollTop = elm.scrollHeight
-    } else {
-      const scrollToMessageId = this.activeChatMessages.scrollToMessageId
-      const messageElm = this.$refs['message-' + scrollToMessageId]
-      if (scrollToMessageId && messageElm && messageElm.length > 0) {
-        elm.scrollTop = messageElm[0].offsetTop - messageElm[0].offsetHeight
-        console.log('Chat, updated, messageElm:', messageElm)
-      }
-    }
-  },
-  methods: {
-    attemptLoad: _.debounce(function () {
       const elm = this.$refs.messageListContainer
-      const currentDistance = isNaN(elm.scrollTop) ? elm.pageYOffset : elm.scrollTop
-      // const currentDistance = elm.scrollHeight - elm.scrollTop - elm.offsetHeight
-      if (currentDistance <= 50) {
-        console.log('reach top, need load more.')
-        this.onLoadMoreRequest()
-      }
-    }, 500),
-    onLoadMoreRequest() {
-      const messages = this.messages
-      if (!messages || !messages.length) {
+      elm.addEventListener('scroll', this.scrollHandler)
+    },
+    activated() {
+      const elm = this.$refs.messageListContainer
+      elm.addEventListener('scroll', this.scrollHandler)
+    },
+    deactivated() {
+      this.isLoading = false
+      const elm = this.$refs.messageListContainer
+      elm.removeEventListener('scroll', this.scrollHandler)
+    },
+    updated() {
+      const elm = this.$refs.messageListContainer
+
+      if (!this.activeChatMessages) {
         return
       }
 
-      const earliestMessageId = this.activeChatMessages.earliestMessageId
-      this.$store.dispatch(FETCH_GET_CHAT_MESSAGES_MORE, {
-        chatId: this.chatId,
-        earliestMessageId,
-        count: 20
-      })
+      if (this.activeChatMessages.currentPage === 0) {
+        elm.scrollTop = elm.scrollHeight
+      } else {
+        const scrollToMessageId = this.activeChatMessages.scrollToMessageId
+        const messageElm = this.$refs['message-' + scrollToMessageId]
+        if (scrollToMessageId && messageElm && messageElm.length > 0) {
+          elm.scrollTop = messageElm[0].offsetTop - messageElm[0].offsetHeight
+          console.log('Chat, updated, messageElm:', messageElm)
+        }
+      }
+    },
+    methods: {
+      attemptLoad: _.debounce(function () {
+        const elm = this.$refs.messageListContainer
+        const currentDistance = isNaN(elm.scrollTop) ? elm.pageYOffset : elm.scrollTop
+        // const currentDistance = elm.scrollHeight - elm.scrollTop - elm.offsetHeight
+        if (currentDistance <= 50) {
+          console.log('reach top, need load more.')
+          this.onLoadMoreRequest()
+        }
+      }, 500),
+      onLoadMoreRequest() {
+        const messages = this.messages
+        if (!messages || !messages.length) {
+          return
+        }
+
+        const earliestMessageId = this.activeChatMessages.earliestMessageId
+        this.$store.dispatch(FETCH_GET_CHAT_MESSAGES_MORE, {
+          chatId: this.chatId,
+          earliestMessageId,
+          count: 20
+        })
+      }
     }
   }
-}
 </script>
 
 <style lang="scss">
-.chat {
-  width: 100%;
-  height: 100%;
-  background-color: azure;
+  @import '~css/variables';
 
-  display: flex;
-  flex-direction: column;
-}
+  $background-color: $chat-background-color;
+  $message-background-color: $message-background-color;
 
-.chat-header-container {
-  width: 100%;
-  height: 60px;
-  border-bottom: 1px solid lightgray;
-
-  padding-left: 15px;
-
-  display: flex;
-  align-items: center;
-
-  .header-text {
-    font-size: 16px;
-    font-weight: 600;
-  }
-}
-
-.chat-history-container {
-  flex: 1;
-  width: 100%;
-  overflow-y: auto;
-  padding: 10px 20px;
-
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
-
-  .message-container {
+  .chat {
     width: 100%;
-    padding: 6px 0;
+    height: 100%;
+    background-color: $background-color;
 
     display: flex;
-    align-items: flex-start;
+    flex-direction: column;
+  }
 
-    &-me {
-      flex-direction: row-reverse;
-    }
+  .chat-header-container {
+    width: 100%;
+    height: 60px;
+    border-bottom: 1px solid lightgray;
 
-    .avatar-container {
-      width: 60px;
-      padding-top: 3px;
+    padding-left: 15px;
 
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    display: flex;
+    align-items: center;
 
-      img {
-        width: 36px;
-        height: 36px;
-        object-fit: cover;
-      }
-    }
-
-    .content-container {
-      max-width: 60%;
-      background-color: lighten(#09bb07, 10%);
-      padding: 10px 6px;
+    .header-text {
+      font-size: 16px;
+      font-weight: 600;
     }
   }
-}
 
-.chat-edit-container {
-  width: 100%;
-  height: 150px;
-  border-top: 1px solid lightgray;
-}
+  .chat-history-container {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+    padding: 10px 20px;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+
+    .time-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .message-container {
+      width: 100%;
+      padding: 6px 0;
+
+      display: flex;
+      align-items: flex-start;
+
+      &-me {
+        flex-direction: row-reverse;
+      }
+
+      .avatar-container {
+        width: 54px;
+        padding-top: 3px;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        img {
+          width: 36px;
+          height: 36px;
+          object-fit: cover; // border-radius: 100%;
+        }
+      }
+
+      .content-container {
+        max-width: 60%;
+        background-color: #fff;
+        border-radius: 4px;
+        padding: 10px 6px;
+      }
+
+      &-me .content-container {
+        background-color: $message-background-color;
+      }
+    }
+  }
+
+  .chat-edit-container {
+    width: 100%;
+    height: 150px;
+    border-top: 1px solid lightgray;
+  }
 </style>

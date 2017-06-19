@@ -127,6 +127,14 @@ const chat = {
         })
       })
     },
+    [types.FETCH_GET_CHAT_MESSAGES_IF_NEEDED]({ dispatch, state }, options) {
+      const messages = state.messagesInChat[options.chatId]
+      if (messages && messages.lastestMessageId) {
+        return
+      }
+
+      dispatch(types.FETCH_GET_CHAT_MESSAGES, options)
+    },
     [types.FETCH_GET_CHAT_MESSAGES]({ commit, state }, options) {
       const token = localStorage.getItem('accessToken')
       commit(types.GET_CHAT_MESSAGES_REQUEST, {
