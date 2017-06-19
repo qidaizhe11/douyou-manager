@@ -19,7 +19,7 @@
               </div>
             </div>
           </template>
-          <template v-else>
+          <template v-else-if="message.isTime">
             <div class="time-container">
               {{message.timeStr}}
             </div>
@@ -55,30 +55,38 @@
         let messages = []
 
         let lastMessageDateTime = null
-        messageList.map(message => {
-          if (message.author.id && message.author.id === userId) {
-            message.isMe = true
-          }
+        let currentGroupedCount = 0
+        messageList
+          .filter(message => {
+            return message.type === 0
+          })
+          .map(message => {
+            if (message.author.id && message.author.id === userId) {
+              message.isMe = true
+            }
 
-          const timeOfMessage = new Date(message.create_time)
+            const timeOfMessage = new Date(message.create_time)
 
-          if (!lastMessageDateTime) {
+            const timeInterval = timeOfMessage - lastMessageDateTime
+            // 间隔超过30秒或者连续条数超过20条，插入时间
+            const isInsertTime = !lastMessageDateTime || timeInterval > 40 * 1000 ||
+              currentGroupedCount > 18
+            if (isInsertTime) {
+              messages.push({
+                type: 100,
+                isTime: true,
+                time: timeOfMessage,
+                timeStr: timeOfMessage.toLocaleString()
+              })
+
+              currentGroupedCount = 0
+            } else {
+              ++currentGroupedCount
+            }
+
+            messages.push(message)
             lastMessageDateTime = timeOfMessage
-          }
-
-          // 间隔超过45秒，插入时间
-          if (timeOfMessage - lastMessageDateTime > 45 * 1000) {
-            messages.push({
-              type: 100,
-              isTime: true,
-              time: timeOfMessage,
-              timeStr: timeOfMessage.toLocaleString()
-            })
-          }
-
-          messages.push(message)
-          lastMessageDateTime = timeOfMessage
-        })
+          })
 
         return messages
       },
