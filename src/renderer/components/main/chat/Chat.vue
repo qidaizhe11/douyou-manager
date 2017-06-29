@@ -35,7 +35,8 @@
 <script>
   import {mapGetters, mapState} from 'vuex'
   import _ from 'lodash'
-  import {FETCH_GET_CHAT_MESSAGES_MORE} from '@/store/mutation-types'
+  import {FETCH_GET_CHAT_MESSAGES_MORE} from 'store/mutation-types'
+  import {formatMessageTime} from 'utils/util'
 
   export default {
     data() {
@@ -76,7 +77,7 @@
                 type: 100,
                 isTime: true,
                 time: timeOfMessage,
-                timeStr: timeOfMessage.toLocaleString()
+                timeStr: formatMessageTime(timeOfMessage)
               })
 
               currentGroupedCount = 0
