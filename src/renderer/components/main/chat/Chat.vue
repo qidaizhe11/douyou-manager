@@ -5,7 +5,7 @@
         {{activeChat && activeChat.target_user.name}}
       </div>
     </div>
-    <div class="chat-history-container" ref="messageListContainer">
+    <div class="chat-history-container" ref="messageListContainer" v-loading.body="isMessagesLoading">
       <template v-if="messages">
         <template v-for="message in messages">
           <template v-if="message.type === 0">
@@ -34,9 +34,13 @@
 
 <script>
   import {mapGetters, mapState} from 'vuex'
+  import Vue from 'vue'
   import _ from 'lodash'
+  import { Loading } from 'element-ui'
   import {FETCH_GET_CHAT_MESSAGES_MORE} from 'store/mutation-types'
   import {formatMessageTime} from 'utils/util'
+
+  Vue.use(Loading.directive)
 
   export default {
     data() {
@@ -96,7 +100,7 @@
           return false
         }
 
-        return this.activeChatMessages.isLoading
+        return this.activeChatMessages.isFetching
       },
       ...mapGetters([
         'activeChat',

@@ -1,5 +1,5 @@
-import * as types from '@/store/mutation-types'
-import Api from '@/api'
+import * as types from 'store/mutation-types'
+import Api from 'api'
 import Vue from 'vue'
 
 const initialMessages = {
@@ -17,7 +17,7 @@ const initialMessages = {
 
 const chat = {
   state: {
-    isLoading: false,
+    isFetching: false,
     chatList: [],
     currentPage: 0,
     currentCount: 0,
@@ -26,7 +26,7 @@ const chat = {
       /*
       chatId: {
         chatId,
-        isLoading: false,
+       isFetching: false,
         messageList: [],
         currentPage: 0,
         totalCount: 0,
@@ -55,7 +55,7 @@ const chat = {
       const messages = state.messagesInChat[chatId]
 
       const messagesInfoForAssign = {
-        isLoading: false,
+        isFetching: false,
         messageList
       }
 
@@ -76,11 +76,11 @@ const chat = {
     },
     [types.GET_CHAT_MESSAGES_REQUEST](state, { chatId }) {
       Vue.set(state.messagesInChat, chatId,
-        Object.assign({}, initialMessages, { chatId, isLoading: true }))
+        Object.assign({}, initialMessages, { chatId, isFetching: true }))
     },
     [types.GET_CHAT_MESSAGES_MORE_REQUEST](state, { chatId }) {
       const messages = state.messagesInChat[chatId]
-      messages.isLoading = true
+      messages.isFetching = true
     },
     [types.GET_CHAT_MESSAGES_MORE_SUCCESS](state, { messageList, chatId }) {
       const messages = state.messagesInChat[chatId]
@@ -90,7 +90,7 @@ const chat = {
         ? messageList[0].id : messages.earliestMessageId
 
       Object.assign(messages, {
-        isLoading: false,
+        isFetching: false,
         messageList: messageListNew,
         scrollToMessageId: messages.earliestMessageId,
         earliestMessageId: earliestMessageIdNew,
@@ -111,8 +111,11 @@ const chat = {
     }
   },
   actions: {
-    [types.FETCH_GET_CHAT_LIST]({ commit, state }, options) {
+    [types.FETCH_GET_CHAT_LIST]({ commit, state, dispatch }, options) {
       const token = localStorage.getItem('accessToken')
+
+      commit(types.GET_CHAT_LIST_REQUEST, null, {root: true})
+
       Api.fetchGetChatList({
         start: options.start,
         count: options.count,
@@ -124,7 +127,9 @@ const chat = {
           start: data.start,
           count: data.count,
           total: data.total
-        })
+        }, {root: true})
+      }).catch(error => {
+        commit(types.GET_CHAT_LIST_FAILURE, {error}, {root: true})
       })
     },
     [types.FETCH_GET_CHAT_MESSAGES_IF_NEEDED]({ dispatch, state }, options) {
