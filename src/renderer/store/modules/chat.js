@@ -4,7 +4,8 @@ import Vue from 'vue'
 
 const initialMessages = {
   chatId: null,
-  isLoading: false,
+  isFetching: false,
+  isFetchingMore: false,
   messageList: [],
   currentPage: 0,
   totalCount: 0,
@@ -26,7 +27,8 @@ const chat = {
       /*
       chatId: {
         chatId,
-       isFetching: false,
+        isFetching: false,
+        isFetchingMore: false,
         messageList: [],
         currentPage: 0,
         totalCount: 0,
@@ -80,7 +82,7 @@ const chat = {
     },
     [types.GET_CHAT_MESSAGES_MORE_REQUEST](state, { chatId }) {
       const messages = state.messagesInChat[chatId]
-      messages.isFetching = true
+      messages.isFetchingMore = true
     },
     [types.GET_CHAT_MESSAGES_MORE_SUCCESS](state, { messageList, chatId }) {
       const messages = state.messagesInChat[chatId]
@@ -90,7 +92,7 @@ const chat = {
         ? messageList[0].id : messages.earliestMessageId
 
       Object.assign(messages, {
-        isFetching: false,
+        isFetchingMore: false,
         messageList: messageListNew,
         scrollToMessageId: messages.earliestMessageId,
         earliestMessageId: earliestMessageIdNew,

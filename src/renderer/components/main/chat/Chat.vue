@@ -5,7 +5,12 @@
         {{activeChat && activeChat.target_user.name}}
       </div>
     </div>
-    <div class="chat-history-container" ref="messageListContainer" v-loading.body="isMessagesLoading">
+    <div class="chat-history-container" ref="messageListContainer" v-loading.body="isLoading">
+      <div class="loading-container" v-show="isLoadingMore">
+        <slot name="spinner">
+          <i class="loading-default"></i>
+        </slot>
+      </div>
       <template v-if="messages">
         <template v-for="message in messages">
           <template v-if="message.type === 0">
@@ -95,12 +100,19 @@
 
         return messages
       },
-      isMessagesLoading() {
+      isLoading() {
         if (!this.activeChatMessages) {
           return false
         }
 
         return this.activeChatMessages.isFetching
+      },
+      isLoadingMore() {
+        if (!this.activeChatMessages) {
+          return false
+        }
+
+        return this.activeChatMessages.isFetchingMore
       },
       ...mapGetters([
         'activeChat',
@@ -113,7 +125,7 @@
     },
     mounted() {
       this.scrollHandler = function () {
-        if (!this.isMessagesLoading) {
+        if (!this.isLoading) {
           this.attemptLoad()
         }
       }.bind(this)
@@ -133,7 +145,7 @@
     updated() {
       const elm = this.$refs.messageListContainer
 
-      if (!this.activeChatMessages) {
+      if (!this.activeChatMessages || this.isLoadingMore || this.isLoading) {
         return
       }
 
@@ -266,5 +278,48 @@
     width: 100%;
     height: 150px;
     border-top: 1px solid lightgray;
+  }
+  
+  .loading-container {
+    width: 100%;
+    text-align: center;
+  }
+
+  .loading-default {
+    $size: 28px;
+    display: inline-block;
+    margin: 15px 0;
+    width: $size;
+    height: $size;
+    font-size: $size;
+    line-height: $size;
+    border-radius: 50%;
+    position: relative;
+    border: 1px solid #999;
+    animation: ease loading-rotating 1.5s infinite;
+
+    &:before{
+      $size: 6px;
+      content: '';
+      position: absolute;
+      display: block;
+      top: 0;
+      left: 50%;
+      margin-top: -$size/2;
+      margin-left: -$size/2;
+      width: $size;
+      height: $size;
+      background-color: #999;
+      border-radius: 50%;
+    }
+  }
+
+  @keyframes loading-rotating{
+    0%{
+      transform: rotate(0);
+    }
+    100%{
+      transform: rotate(360deg);
+    }
   }
 </style>
