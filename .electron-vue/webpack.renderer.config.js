@@ -127,7 +127,8 @@ let rendererConfig = {
       'components': path.join(__dirname, '../src/renderer/components'),
       'router': path.join(__dirname, '../src/renderer/router'),
       'store': path.join(__dirname, '../src/renderer/store'),
-      'utils': path.join(__dirname, '../src/renderer/utils')
+      'utils': path.join(__dirname, '../src/renderer/utils'),
+      'config': path.join(__dirname, '../src/renderer/config')
     },
     extensions: ['.js', '.vue', '.json', '.css', '.node', '.scss']
   },

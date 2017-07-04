@@ -2,14 +2,17 @@ import * as types from 'store/mutation-types'
 import Api from 'api'
 import Vue from 'vue'
 
+import { CHAT_MESSAGE_PAGE_COUNT } from 'config/config'
+
 const initialMessages = {
   chatId: null,
   isFetching: false,
   isFetchingMore: false,
+  error: null,
   messageList: [],
   currentPage: 0,
-  totalCount: 0,
-  lastestMessageId: null,
+  currentCount: 0,
+  latestMessageId: null,
   earliestMessageId: null,
   scrollToMessageId: null,
   unreadCount: 0,
@@ -26,17 +29,18 @@ const chat = {
     messagesInChat: {
       /*
       chatId: {
-        chatId,
+        chatId: null,
         isFetching: false,
         isFetchingMore: false,
+        error: null,
         messageList: [],
         currentPage: 0,
-        totalCount: 0,
-        latestMessageId,
-        earliestMessageId,
-        scrollToMessageId,
+        currentCount: 0,
+        latestMessageId: null,
+        earliestMessageId: null,
+        scrollToMessageId: null,
         unreadCount: 0,
-        isLoadALl: false
+        isLoadAll: false
       }
       */
     },
@@ -53,21 +57,25 @@ const chat = {
       // state.count += count
       // state.total = total
     },
-    [types.GET_CHAT_MESSAGES_SUCCESS](state, { messageList, chatId }) {
+    [types.GET_CHAT_MESSAGES_SUCCESS](state, { messageList, chatId, requestCount }) {
       const messages = state.messagesInChat[chatId]
 
       const messagesInfoForAssign = {
         isFetching: false,
-        messageList
+        messageList,
+        currentCount: messageList.length
       }
 
       if (messageList.length > 0) {
         messagesInfoForAssign.earliestMessageId = messageList[0].id
-        messagesInfoForAssign.lastestMessageId = messageList[messageList.length - 1].id
+        messagesInfoForAssign.latestMessageId = messageList[messageList.length - 1].id
+      }
+
+      if (messageList.length < requestCount) {
+        messagesInfoForAssign.isLoadAll = true
       }
 
       if (messages) {
-        // state.messages = {...state.messages, ...messagesInfoForAssign}
         Object.assign(messages, messagesInfoForAssign)
       } else {
         Vue.set(state.messagesInChat, chatId, {
@@ -84,7 +92,7 @@ const chat = {
       const messages = state.messagesInChat[chatId]
       messages.isFetchingMore = true
     },
-    [types.GET_CHAT_MESSAGES_MORE_SUCCESS](state, { messageList, chatId }) {
+    [types.GET_CHAT_MESSAGES_MORE_SUCCESS](state, { messageList, chatId, requestCount }) {
       const messages = state.messagesInChat[chatId]
 
       if (messageList && messageList.length === 0) {
@@ -106,7 +114,49 @@ const chat = {
         messageList: messageListNew,
         scrollToMessageId: messages.earliestMessageId,
         earliestMessageId: earliestMessageIdNew,
-        currentPage: ++messages.currentPage
+        currentPage: ++messages.currentPage,
+        currentCount: messageListNew.length
+      })
+
+      if (messageList.length < requestCount) {
+        messages.isLoadAll = true
+      }
+    },
+    [types.LOAD_CHAT_MESSAGES](state, { chatId, count }) {
+      const messages = state.messagesInChat[chatId]
+      const messageLength = messages.messageList.length
+
+      if (messageLength <= 0) {
+        return
+      }
+
+      const currentCountNew = messageLength > count ? count : messageLength
+      const earliestMessageIdNew = messages.messageList[messageLength - currentCountNew].id
+
+      Object.assign(messages, {
+        currentPage: 0,
+        currentCount: currentCountNew,
+        earliestMessageId: earliestMessageIdNew,
+        latestMessageId: messages.messageList[messageLength - 1].id,
+        scrollToMessageId: '',
+        isLoadAll: false
+      })
+    },
+    [types.LOAD_CHAT_MESSAGES_MORE](state, { chatId, count }) {
+      const messages = state.messagesInChat[chatId]
+      const messageLength = messages.messageList.length
+
+      const remainCount = messages.messageList.length - messages.currentCount
+
+      const currentCountNew = messages.currentCount + (remainCount > count ? count : remainCount)
+
+      const earliestMessageIdNew = messages.messageList[messageLength - currentCountNew].id
+
+      Object.assign(messages, {
+        currentPage: ++messages.currentPage,
+        currentCount: currentCountNew,
+        earliestMessageId: earliestMessageIdNew,
+        scrollToMessageId: messages.earliestMessageId
       })
     },
     [types.SET_ACTIVE_CHAT_ID](state, { chatId }) {
@@ -117,7 +167,10 @@ const chat = {
       if (messages) {
         Object.assign(messages, {
           scrollToMessageId: '',
-          currentPage: 0
+          currentPage: 0,
+          currentCount: 0,
+          earliestMessageId: '',
+          latestMessageId: ''
         })
       }
     }
@@ -144,9 +197,11 @@ const chat = {
         commit(types.GET_CHAT_LIST_FAILURE, {error}, {root: true})
       })
     },
-    [types.FETCH_GET_CHAT_MESSAGES_IF_NEEDED]({ dispatch, state }, options) {
+    [types.FETCH_GET_CHAT_MESSAGES_IF_NEEDED]({ dispatch, state, commit }, options) {
       const messages = state.messagesInChat[options.chatId]
-      if (messages && messages.lastestMessageId) {
+      if (messages && messages.messageList.length > 0) {
+        commit(types.LOAD_CHAT_MESSAGES, options)
+
         return
       }
 
@@ -166,11 +221,21 @@ const chat = {
         console.log('fetchGetChatMessages, got data:', data)
         commit(types.GET_CHAT_MESSAGES_SUCCESS, {
           messageList: data.messages,
-          chatId: options.chatId
+          chatId: options.chatId,
+          requestCount: options.count
         })
       })
     },
     [types.FETCH_GET_CHAT_MESSAGES_MORE]({ commit, state }, options) {
+      const chatId = options.chatId || ''
+      const messages = state.messagesInChat[chatId]
+
+      if (messages.currentCount < messages.messageList.length) {
+        commit(types.LOAD_CHAT_MESSAGES_MORE, { chatId, count: options.count })
+
+        return
+      }
+
       const token = localStorage.getItem('accessToken')
       commit(types.GET_CHAT_MESSAGES_MORE_REQUEST, {
         chatId: options.chatId
@@ -185,7 +250,8 @@ const chat = {
         console.log('fetchGetChatMessages, got data:', data)
         commit(types.GET_CHAT_MESSAGES_MORE_SUCCESS, {
           messageList: data.messages,
-          chatId: options.chatId
+          chatId: options.chatId,
+          requestCount: options.count
         })
       })
     },
@@ -196,32 +262,6 @@ const chat = {
       }
       commit(types.SET_ACTIVE_CHAT_ID, { chatId })
     }
-    // [types.FETCH_GET_FOLLOWING]({ commit, state }, options) {
-    //   const token = localStorage.getItem('accessToken')
-    //   Api.fetchGetFollowing({
-    //     userId: '78709139',
-    //     count: 1000,
-    //     token
-    //   }).then(data => {
-    //     console.log('fetch_get_following, got data:', data)
-    //   })
-    // },
-    // [types.FETCH_GET_HOME_TIMELINE]({ commit, state }, options) {
-    //   const token = localStorage.getItem('accessToken')
-    //   Api.fetchGetHomeTimeline({
-    //     token
-    //   }).then(data => {
-    //     console.log('fetch_get_home_timeline, got data:', data)
-    //   })
-    // },
-    // [types.FETCH_GET_HAS_NEW_RECS]({ commit, state }, options) {
-    //   const token = localStorage.getItem('accessToken')
-    //   Api.fetchGetHasNewRecs({
-    //     token
-    //   }).then(data => {
-    //     console.log('fetch_get_new_recs, got data:', data)
-    //   })
-    // }
   },
   getters: {
     activeChat(state, getters) {

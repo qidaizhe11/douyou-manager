@@ -61,8 +61,13 @@
 
         const userId = this.userId
 
-        const messageList = this.activeChatMessages.messageList
+//        const messageList = this.activeChatMessages.messageList.slice(
+//          this.activeChatMessages.messageList.length - this.activeChatMessages.currentCount)
+        const messageList = _.takeRight(this.activeChatMessages.messageList,
+          this.activeChatMessages.currentCount)
         let messages = []
+
+        console.log('Chat, messages length:', messageList.length)
 
         let lastMessageDateTime = null
         let currentGroupedCount = 0

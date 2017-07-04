@@ -1,5 +1,5 @@
 import Qs from 'qs'
-import { doubanApi } from '@/utils/config'
+import { doubanApi } from 'config/config'
 import router from '@/router'
 import * as types from '@/store/mutation-types'
 

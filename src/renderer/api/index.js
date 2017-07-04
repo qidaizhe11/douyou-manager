@@ -1,6 +1,6 @@
 import Qs from 'qs'
 import axois from 'axios'
-import { doubanApi } from '@/utils/config'
+import { doubanApi } from 'config/config'
 import Util from './util'
 
 export default {
