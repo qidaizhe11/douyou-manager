@@ -12,8 +12,8 @@ const initialMessages = {
   lastestMessageId: null,
   earliestMessageId: null,
   scrollToMessageId: null,
-  isRead: true,
-  unreadCount: 0
+  unreadCount: 0,
+  isLoadAll: false
 }
 
 const chat = {
@@ -35,8 +35,8 @@ const chat = {
         latestMessageId,
         earliestMessageId,
         scrollToMessageId,
-        isRead: true,
-        unreadCount: 0
+        unreadCount: 0,
+        isLoadALl: false
       }
       */
     },
@@ -86,6 +86,16 @@ const chat = {
     },
     [types.GET_CHAT_MESSAGES_MORE_SUCCESS](state, { messageList, chatId }) {
       const messages = state.messagesInChat[chatId]
+
+      if (messageList && messageList.length === 0) {
+        Object.assign(messages, {
+          isFetchingMore: false,
+          isLoadAll: true,
+          currentPage: ++messages.currentPage
+        })
+
+        return
+      }
 
       const messageListNew = messageList.concat(messages.messageList)
       const earliestMessageIdNew = messageList.length > 0

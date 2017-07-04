@@ -114,6 +114,13 @@
 
         return this.activeChatMessages.isFetchingMore
       },
+      isLoadAll() {
+        if (!this.activeChatMessages) {
+          return false
+        }
+
+        return this.activeChatMessages.isLoadAll
+      },
       ...mapGetters([
         'activeChat',
         'activeChatMessages'
@@ -125,7 +132,7 @@
     },
     mounted() {
       this.scrollHandler = function () {
-        if (!this.isLoading) {
+        if (!this.isLoading && !this.isLoadAll) {
           this.attemptLoad()
         }
       }.bind(this)
@@ -233,6 +240,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 12px;
     }
 
     .message-container {
@@ -266,6 +274,7 @@
         background-color: #fff;
         border-radius: 4px;
         padding: 10px 6px;
+        font-size: 14px;
       }
 
       &-me .content-container {
