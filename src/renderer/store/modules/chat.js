@@ -2,8 +2,6 @@ import * as types from 'store/mutation-types'
 import Api from 'api'
 import Vue from 'vue'
 
-import { CHAT_MESSAGE_PAGE_COUNT } from 'config/config'
-
 const initialMessages = {
   chatId: null,
   isFetching: false,

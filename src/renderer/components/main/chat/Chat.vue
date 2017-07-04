@@ -67,8 +67,6 @@
           this.activeChatMessages.currentCount)
         let messages = []
 
-        console.log('Chat, messages length:', messageList.length)
-
         let lastMessageDateTime = null
         let currentGroupedCount = 0
         messageList
@@ -167,7 +165,7 @@
         const scrollToMessageId = this.activeChatMessages.scrollToMessageId
         const messageElm = this.$refs['message-' + scrollToMessageId]
         if (scrollToMessageId && messageElm && messageElm.length > 0) {
-          elm.scrollTop = messageElm[0].offsetTop - messageElm[0].offsetHeight
+          elm.scrollTop = messageElm[0].offsetTop - messageElm[0].offsetHeight - 36
           console.log('Chat, updated, messageElm:', messageElm)
         }
       }
