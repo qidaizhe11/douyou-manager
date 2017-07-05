@@ -1,6 +1,6 @@
 <template>
   <div class="chat-list" ref="chatListContainer" v-loading.body="getChatListRequest.isFetching">
-    <template v-for='item in chatList'>
+    <template v-for='item in chats'>
       <div class="chat-list-item" @click='onItemClick(item)'>
         <div class="left-group">
           <div class="avatar-container">
@@ -11,7 +11,7 @@
           <div class="header-container">
             <div class="username">{{item.target_user.name}}</div>
             <!--<div class="datetime">{{item.last_message.create_time}}</div>-->
-            <div class="datetime">昨天</div>
+            <div class="datetime">{{item.timeStr}}</div>
           </div>
           <div class="content-container">
             {{item.last_message.text}}
@@ -37,6 +37,7 @@
     FETCH_GET_CHAT_LIST, FETCH_GET_CHAT_MESSAGES_IF_NEEDED, CHANGE_ACTIVE_CHAT_ID,
     FETCH_GET_CHAT_LIST_MORE
   } from 'store/mutation-types'
+  import { formatChatListTime } from 'utils/util'
 
   Vue.use(Loading.directive)
 
@@ -99,6 +100,15 @@
       }
     },
     computed: {
+      chats() {
+        return this.chatList.map((chat, i) => {
+          if (chat.last_message.create_time) {
+            const timeOfLastMessage = new Date(chat.last_message.create_time)
+            chat.timeStr = formatChatListTime(timeOfLastMessage)
+          }
+          return chat
+        })
+      },
       ...mapState({
         chatList: state => state.chat.chatList,
         isLoadAll: state => state.chat.isLoadAll,

@@ -21,3 +21,24 @@ export function formatMessageTime(messageTime) {
 
   return timeWrapper.format('lll')
 }
+
+export function formatChatListTime(latestTime) {
+  const timeWrapper = moment(latestTime)
+
+  const today = moment().startOf('day')
+  if (timeWrapper.isAfter(today)) {
+    return timeWrapper.format('H:mm')
+  }
+
+  const yesterday = today.subtract(1, 'days')
+  if (timeWrapper.isAfter(yesterday)) {
+    return '昨天'
+  }
+
+  const startOfWeek = moment().startOf('week')
+  if (timeWrapper.isAfter(startOfWeek)) {
+    return timeWrapper.format('dddd')
+  }
+
+  return timeWrapper.format('YY/M/D')
+}
