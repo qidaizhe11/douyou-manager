@@ -202,6 +202,7 @@
 
   $background-color: $chat-background-color;
   $message-background-color: $message-background-color;
+  $scrollbar-color: $chat-scrollbar-color;
 
   .chat {
     width: 100%;
@@ -233,6 +234,13 @@
     width: 100%;
     overflow-y: auto;
     padding: 10px 20px;
+
+    &::-webkit-scrollbar {
+      width: 9px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: $scrollbar-color;
+    }
 
     display: flex;
     flex-wrap: wrap;
@@ -295,43 +303,5 @@
   .loading-container {
     width: 100%;
     text-align: center;
-  }
-
-  .loading-default {
-    $size: 28px;
-    display: inline-block;
-    margin: 15px 0;
-    width: $size;
-    height: $size;
-    font-size: $size;
-    line-height: $size;
-    border-radius: 50%;
-    position: relative;
-    border: 1px solid #999;
-    animation: ease loading-rotating 1.5s infinite;
-
-    &:before{
-      $size: 6px;
-      content: '';
-      position: absolute;
-      display: block;
-      top: 0;
-      left: 50%;
-      margin-top: -$size/2;
-      margin-left: -$size/2;
-      width: $size;
-      height: $size;
-      background-color: #999;
-      border-radius: 50%;
-    }
-  }
-
-  @keyframes loading-rotating{
-    0%{
-      transform: rotate(0);
-    }
-    100%{
-      transform: rotate(360deg);
-    }
   }
 </style>

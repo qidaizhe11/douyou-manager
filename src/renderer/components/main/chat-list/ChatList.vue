@@ -19,16 +19,23 @@
         </div>
       </div>
     </template>
+    <div class="loading-container" v-show="getChatListMoreRequest.isFetching">
+    <!--<div class="loading-container" v-show="true">-->
+      <slot name="spinner">
+        <i class="loading-default"></i>
+      </slot>
+    </div>
   </div>
 </template>
 
 <script>
   import Vue from 'vue'
-  //  import _ from 'lodash'
+  import _ from 'lodash'
   import {Loading} from 'element-ui'
   import {mapState} from 'vuex'
   import {
-    FETCH_GET_CHAT_LIST, FETCH_GET_CHAT_MESSAGES_IF_NEEDED, CHANGE_ACTIVE_CHAT_ID
+    FETCH_GET_CHAT_LIST, FETCH_GET_CHAT_MESSAGES_IF_NEEDED, CHANGE_ACTIVE_CHAT_ID,
+    FETCH_GET_CHAT_LIST_MORE
   } from 'store/mutation-types'
 
   Vue.use(Loading.directive)
@@ -41,8 +48,35 @@
     },
     mounted() {
       this.getChatList()
+
+      this.scrollHandler = function () {
+        if (!this.getChatListMoreRequest.isFetching && !this.isLoadAll) {
+          this.attemptLoad()
+        }
+      }.bind(this)
+
+      const elm = this.$refs.chatListContainer
+      elm.addEventListener('scroll', this.scrollHandler)
+    },
+    activated() {
+      const elm = this.$refs.chatListContainer
+      elm.addEventListener('scroll', this.scrollHandler)
+    },
+    deactivated() {
+      this.isLoading = false
+      const elm = this.$refs.chatListContainer
+      elm.removeEventListener('scroll', this.scrollHandler)
     },
     methods: {
+      attemptLoad: _.debounce(function () {
+        const elm = this.$refs.chatListContainer
+//        const currentDistance = isNaN(elm.scrollTop) ? elm.pageYOffset : elm.scrollTop
+        const currentDistance = elm.scrollHeight - elm.scrollTop - elm.offsetHeight
+        if (currentDistance <= 50) {
+          console.log('chatlist, reach bottom, need load more.')
+          this.onLoadMoreRequest()
+        }
+      }, 500),
       getChatList() {
         this.$store.dispatch(FETCH_GET_CHAT_LIST, {
           start: 0,
@@ -57,11 +91,17 @@
           chatId,
           count: 20
         })
+      },
+      onLoadMoreRequest() {
+        this.$store.dispatch(FETCH_GET_CHAT_LIST_MORE, {
+          count: 20
+        })
       }
     },
     computed: {
       ...mapState({
         chatList: state => state.chat.chatList,
+        isLoadAll: state => state.chat.isLoadAll,
         getChatListRequest: state => state.requests.chat.getChatList,
         getChatListMoreRequest: state => state.requests.chat.getChatListMore
       })
@@ -93,6 +133,11 @@
     flex-wrap: wrap;
     align-items: flex-start;
     align-content: flex-start;
+  }
+
+  .loading-container {
+    width: 100%;
+    text-align: center;
   }
 
   .chat-list-item {

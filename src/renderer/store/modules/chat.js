@@ -69,6 +69,7 @@ const chat = {
         chatList: newChatList,
         currentCount: newChatList.length,
         currentPage: ++state.currentPage,
+        totalCount: totalCount,
         isLoadAll: newChatList.length >= totalCount
       })
     },
@@ -209,6 +210,26 @@ const chat = {
         }, {root: true})
       }).catch(error => {
         commit(types.GET_CHAT_LIST_FAILURE, {error}, {root: true})
+      })
+    },
+    [types.FETCH_GET_CHAT_LIST_MORE]({ commit, state, dispatch }, options) {
+      const token = localStorage.getItem('accessToken')
+
+      commit(types.GET_CHAT_LIST_MORE_REQUEST, null, {root: true})
+
+      Api.fetchGetChatList({
+        start: state.currentCount,
+        count: options.count,
+        token
+      }).then(data => {
+        console.log('fetch_get_chat_list_more, got data:', data)
+        commit(types.GET_CHAT_LIST_MORE_SUCCESS, {
+          chatList: data.results,
+          requestCount: data.count,
+          totalCount: data.total
+        }, {root: true})
+      }).catch(error => {
+        commit(types.GET_CHAT_LIST_MORE_FAILURE, {error}, {root: true})
       })
     },
     [types.FETCH_GET_CHAT_MESSAGES_IF_NEEDED]({ dispatch, state, commit }, options) {

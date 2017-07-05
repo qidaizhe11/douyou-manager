@@ -44,7 +44,7 @@ const requests = {
     },
     [types.GET_CHAT_LIST_MORE_REQUEST] (state) {
       Object.assign(state.chat.getChatListMore, {
-        isFetching: false
+        isFetching: true
       })
     },
     [types.GET_CHAT_LIST_MORE_FAILURE] (state, {error}) {
