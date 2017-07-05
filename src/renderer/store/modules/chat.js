@@ -19,11 +19,11 @@ const initialMessages = {
 
 const chat = {
   state: {
-    isFetching: false,
     chatList: [],
     currentPage: 0,
     currentCount: 0,
     totalCount: 0,
+    isLoadAll: false,
     messagesInChat: {
       /*
       chatId: {
@@ -45,15 +45,32 @@ const chat = {
     activeChatId: ''
   },
   mutations: {
-    [types.GET_CHAT_LIST_SUCCESS](state, { chatList, start, count, total }) {
-      if (start === 0) {
-        state.chatList = chatList
-      } else {
-        state.chatList.concat(chatList)
-      }
+    [types.GET_CHAT_LIST_SUCCESS](state, { chatList, requestCount, totalCount }) {
+      // if (start === 0) {
+      //   state.chatList = chatList
+      // } else {
+      //   state.chatList.concat(chatList)
+      // }
+
+      Object.assign(state, {
+        chatList: chatList,
+        currentCount: chatList.length,
+        totalCount: totalCount,
+        isLoadAll: chatList.length >= totalCount
+      })
       // state.start += count
       // state.count += count
       // state.total = total
+    },
+    [types.GET_CHAT_LIST_MORE_SUCCESS](state, { chatList, requestCount, totalCount }) {
+      const newChatList = state.chatList.concat(chatList)
+
+      Object.assign(state, {
+        chatList: newChatList,
+        currentCount: newChatList.length,
+        currentPage: ++state.currentPage,
+        isLoadAll: newChatList.length >= totalCount
+      })
     },
     [types.GET_CHAT_MESSAGES_SUCCESS](state, { messageList, chatId, requestCount }) {
       const messages = state.messagesInChat[chatId]
@@ -187,9 +204,8 @@ const chat = {
         console.log('fetch_get_chat_list, got data:', data)
         commit(types.GET_CHAT_LIST_SUCCESS, {
           chatList: data.results,
-          start: data.start,
-          count: data.count,
-          total: data.total
+          requestCount: data.count,
+          totalCount: data.total
         }, {root: true})
       }).catch(error => {
         commit(types.GET_CHAT_LIST_FAILURE, {error}, {root: true})

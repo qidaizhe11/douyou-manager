@@ -9,6 +9,11 @@ const requests = {
         isFetching: false,
         error: null
       },
+      getChatListMore: {
+        status: 'idle',
+        isFetching: false,
+        error: null
+      },
       getChatMessages: {
         status: 'idle',
         isFetching: false,
@@ -33,6 +38,23 @@ const requests = {
     },
     [types.GET_CHAT_LIST_SUCCESS] (state) {
       Object.assign(state.chat.getChatList, {
+        isFetching: false,
+        error: null
+      })
+    },
+    [types.GET_CHAT_LIST_MORE_REQUEST] (state) {
+      Object.assign(state.chat.getChatListMore, {
+        isFetching: false
+      })
+    },
+    [types.GET_CHAT_LIST_MORE_FAILURE] (state, {error}) {
+      Object.assign(state.chat.getChatListMore, {
+        isFetching: false,
+        error
+      })
+    },
+    [types.GET_CHAT_LIST_MORE_SUCCESS] (state) {
+      Object.assign(state.chat.getChatListMore, {
         isFetching: false,
         error: null
       })
