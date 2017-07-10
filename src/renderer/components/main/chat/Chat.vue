@@ -32,18 +32,7 @@
         </template>
       </template>
     </div>
-    <div :class="{'chat-edit-container': true, 'active': isTextareaActive}"
-         @click="onEditContainerClick">
-      <!--<div class="top-container"></div>-->
-      <div class="edit-container">
-        <textarea class="edit-textarea" ref="editTextarea" rows="3" @blur="onTextareaBlur"
-                  @focus="onTextareaFocus">
-        </textarea>
-      </div>
-      <div class="bottom-container">
-        <el-button class="send-button" :plain="true" type="success">发送</el-button>
-      </div>
-    </div>
+    <ChatInput />
   </div>
 </template>
 
@@ -51,19 +40,22 @@
   import {mapGetters, mapState} from 'vuex'
   import Vue from 'vue'
   import _ from 'lodash'
-  import { Loading, Button } from 'element-ui'
+  import { Loading } from 'element-ui'
   import {FETCH_GET_CHAT_MESSAGES_MORE} from 'store/mutation-types'
   import {formatMessageTime} from 'utils/util'
 
+  import ChatInput from './ChatInput'
+
   Vue.use(Loading.directive)
-  Vue.use(Button)
 
   export default {
     data() {
       return {
         // isLoading: false
-        isTextareaActive: false
       }
+    },
+    components: {
+      ChatInput
     },
     computed: {
       messages() {
@@ -204,26 +196,6 @@
           earliestMessageId,
           count: 20
         })
-      },
-      onEditContainerClick() {
-        this.focusInputTextarea()
-      },
-      onTextareaBlur() {
-        this.isTextareaActive = false
-      },
-      onTextareaFocus() {
-        this.isTextareaActive = true
-      },
-      focusInputTextarea() {
-        this.$refs.editTextarea.focus()
-        this.isTextareaActive = true
-      }
-    },
-    watch: {
-      chatId: function(chatId) {
-        if (chatId) {
-          this.focusInputTextarea()
-        }
       }
     }
   }
@@ -328,56 +300,6 @@
     .loading-container {
       width: 100%;
       text-align: center;
-    }
-  }
-
-  .chat-edit-container {
-    width: 100%;
-    /*height: 150px;*/
-    border-top: 1px solid lightgray;
-    padding: 20px 30px 10px;
-
-    /*background-color: #fff;*/
-
-    display: flex;
-    flex-direction: column;
-
-    &.active {
-      background-color: #fff;
-    }
-
-    .top-container {
-      width: 100%;
-      height: 30px;
-    }
-
-    .edit-container {
-      /*flex: 1;*/
-
-      textarea {
-        width: 100%;
-        /*height: 100%;*/
-        resize: none;
-
-        &::-webkit-scrollbar {
-          width: 7px;
-        }
-        &::-webkit-scrollbar-thumb {
-          background-color: $scrollbar-color;
-        }
-      }
-    }
-
-    .bottom-container {
-      width: 100%;
-      height: 30px;
-
-      display: flex;
-      justify-content: flex-end;
-
-      .send-button {
-        min-width: 70px;
-      }
     }
   }
 </style>
