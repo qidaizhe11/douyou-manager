@@ -34,6 +34,7 @@ const chat = {
     totalCount: 0,
     isLoadAll: false,
     activeChatId: '',
+    syncId: 0,
     messagesInChat: {
       /*
       chatId: {
@@ -201,6 +202,11 @@ const chat = {
 
       messages.messageList.push(message)
     },
+    [types.SYNC_CHAT_MESSAGE_SUCCESS](state, { syncData }) {
+      if (syncData && syncData.id && syncData.id !== state.syncId) {
+        state.syncId = syncData.id
+      }
+    },
     [types.SET_ACTIVE_CHAT_ID](state, { chatId }) {
       state.activeChatId = chatId
     },
@@ -332,6 +338,20 @@ const chat = {
         commit(types.POST_CHAT_MESSAGE_SUCCESS, {
           chatId,
           message: data
+        })
+      })
+    },
+    [types.FETCH_SYNC_CHAT_MESSAGE]({ commit, state }, options) {
+      const token = localStorage.getItem('accessToken')
+
+      Api.fetchSyncChatMessage({
+        syncId: state.syncId,
+        token
+      }).then(data => {
+        console.log('fetchSyncChatMessage, got data:', data)
+
+        commit(types.SYNC_CHAT_MESSAGE_SUCCESS, {
+          syncData: data.sync
         })
       })
     },

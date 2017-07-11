@@ -66,6 +66,25 @@ export default {
       body: postData
     })
   },
+  fetchSyncChatMessage({ syncId, token }) {
+    const params = Qs.stringify({
+      type: 'private',
+      sync_id: syncId,
+      start: 0,
+      count: 200,
+      apikey: '0dad551ec0f84ed02907ff5c42e8ec70',
+      os_rom: 'miui6',
+      channel: 'Xiaomi_Market',
+      udid: '8a2a02080cd222dfd017d22833736a7ee3a9bae5'
+    })
+    const url = doubanApi.syncChatMessageUrl + `?${params}`
+    return Util.fetchData(url, {
+      method: 'get',
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    })
+  },
   fetchGetFollowing({ userId, count, token }) {
     const params = Qs.stringify({
       count: count,

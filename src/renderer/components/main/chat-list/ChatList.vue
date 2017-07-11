@@ -35,7 +35,7 @@
   import {mapState} from 'vuex'
   import {
     FETCH_GET_CHAT_LIST, FETCH_GET_CHAT_MESSAGES_IF_NEEDED, CHANGE_ACTIVE_CHAT_ID,
-    FETCH_GET_CHAT_LIST_MORE
+    FETCH_GET_CHAT_LIST_MORE, FETCH_SYNC_CHAT_MESSAGE
   } from 'store/mutation-types'
   import { formatChatListTime } from 'utils/util'
 
@@ -58,6 +58,8 @@
 
       const elm = this.$refs.chatListContainer
       elm.addEventListener('scroll', this.scrollHandler)
+
+      this.syncMessage()
     },
     activated() {
       const elm = this.$refs.chatListContainer
@@ -67,6 +69,9 @@
       this.isLoading = false
       const elm = this.$refs.chatListContainer
       elm.removeEventListener('scroll', this.scrollHandler)
+    },
+    beforeDestroy() {
+      clearTimeout(this.timeoutId)
     },
     methods: {
       attemptLoad: _.debounce(function () {
@@ -97,6 +102,14 @@
         this.$store.dispatch(FETCH_GET_CHAT_LIST_MORE, {
           count: 20
         })
+      },
+      syncMessage() {
+        this.timeoutId = setTimeout(syncMessageTimeout.bind(this), 5000)
+
+        function syncMessageTimeout() {
+          this.$store.dispatch(FETCH_SYNC_CHAT_MESSAGE)
+          this.timeoutId = setTimeout(syncMessageTimeout.bind(this), 5000)
+        }
       }
     },
     computed: {
