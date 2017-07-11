@@ -43,6 +43,29 @@ export default {
       }
     })
   },
+  fetchPostChatMessage({userId, message, token}) {
+    const timestamp = Date.now()
+
+    const url = doubanApi.postChatMessageOfUserIdUrl(userId)
+
+    const postData = Qs.stringify({
+      nonce: timestamp,
+      text: message,
+      apikey: '0dad551ec0f84ed02907ff5c42e8ec70',
+      os_rom: 'miui6',
+      channel: 'Xiaomi_Market',
+      udid: '8a2a02080cd222dfd017d22833736a7ee3a9bae5'
+    })
+
+    return Util.fetchData(url, {
+      method: 'post',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: postData
+    })
+  },
   fetchGetFollowing({ userId, count, token }) {
     const params = Qs.stringify({
       count: count,

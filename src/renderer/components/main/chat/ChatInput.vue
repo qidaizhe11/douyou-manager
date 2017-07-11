@@ -1,14 +1,16 @@
 <template>
-  <div :class="{'chat-edit-container': true, 'active': isTextareaActive}"
+  <div :class="{'chat-edit-container': true, 'active': isActive}"
        @click="onEditContainerClick">
     <!--<div class="top-container"></div>-->
     <div class="edit-container">
         <textarea class="edit-textarea" ref="editTextarea" rows="3" @blur="onTextareaBlur"
-                  @focus="onTextareaFocus">
+                  @focus="onTextareaFocus" @input="onValueInput">
         </textarea>
     </div>
     <div class="bottom-container">
-      <el-button class="send-button" :plain="true" type="success">发送</el-button>
+      <el-button class="send-button" :plain="true" type="success" @click="onSendButtonClick">
+        发送
+      </el-button>
     </div>
   </div>
 </template>
@@ -18,12 +20,15 @@
   import Vue from 'vue'
   import { Button } from 'element-ui'
 
+  import { FETCH_POST_CHAT_MESSAGE } from 'store/mutation-types'
+
   Vue.use(Button)
 
   export default {
     data() {
       return {
-        isTextareaActive: false
+        isActive: false,
+        value: ''
       }
     },
     computed: {
@@ -35,15 +40,30 @@
       onEditContainerClick() {
         this.focusInputTextarea()
       },
+      onValueInput(e) {
+        console.log('ChatInput, onValueInput, e:', e, 'value:', e.target.value)
+
+        this.value = e.target.value
+      },
+      onSendButtonClick() {
+        console.log('ChatInput, onSendButtonClick, value:', this.value)
+
+        if (this.value && this.chatId) {
+          this.$store.dispatch(FETCH_POST_CHAT_MESSAGE, {
+            chatId: this.chatId,
+            message: this.value
+          })
+        }
+      },
       onTextareaBlur() {
-        this.isTextareaActive = false
+        this.isActive = false
       },
       onTextareaFocus() {
-        this.isTextareaActive = true
+        this.isActive = true
       },
       focusInputTextarea() {
         this.$refs.editTextarea.focus()
-        this.isTextareaActive = true
+        this.isActive = true
       }
     },
     watch: {

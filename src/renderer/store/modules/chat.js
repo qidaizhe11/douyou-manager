@@ -17,6 +17,15 @@ const initialMessages = {
   isLoadAll: false
 }
 
+// const initialCachedMessages = {
+//   chatId: null,
+//   isFetching: false,
+//   error: null,
+//   cachedMessage: '',
+//   failedMessages: [],
+//   count: 0
+// }
+
 const chat = {
   state: {
     chatList: [],
@@ -24,6 +33,7 @@ const chat = {
     currentCount: 0,
     totalCount: 0,
     isLoadAll: false,
+    activeChatId: '',
     messagesInChat: {
       /*
       chatId: {
@@ -42,7 +52,18 @@ const chat = {
       }
       */
     },
-    activeChatId: ''
+    cachedMessagesInChat: {
+      /*
+      chatId: {
+       chatId: null,
+       isFetching: false,
+       error: null,
+       cachedMessage: '',
+       failedMessages: [],
+       count: 0
+      }
+      */
+    }
   },
   mutations: {
     [types.GET_CHAT_LIST_SUCCESS](state, { chatList, requestCount, totalCount }) {
@@ -175,6 +196,11 @@ const chat = {
         scrollToMessageId: messages.earliestMessageId
       })
     },
+    [types.POST_CHAT_MESSAGE_SUCCESS](state, { chatId, message }) {
+      const messages = state.messagesInChat[chatId]
+
+      messages.messageList.push(message)
+    },
     [types.SET_ACTIVE_CHAT_ID](state, { chatId }) {
       state.activeChatId = chatId
     },
@@ -287,6 +313,25 @@ const chat = {
           messageList: data.messages,
           chatId: options.chatId,
           requestCount: options.count
+        })
+      })
+    },
+    [types.FETCH_POST_CHAT_MESSAGE]({ commit, state }, { chatId, message }) {
+      if (!chatId || !message) {
+        return
+      }
+
+      const token = localStorage.getItem('accessToken')
+
+      Api.fetchPostChatMessage({
+        userId: chatId,
+        message,
+        token
+      }).then(data => {
+        console.log('fetchPostChatMessage, got data:', data)
+        commit(types.POST_CHAT_MESSAGE_SUCCESS, {
+          chatId,
+          message: data
         })
       })
     },
