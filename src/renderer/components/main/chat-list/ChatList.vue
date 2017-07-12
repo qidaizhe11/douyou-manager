@@ -6,6 +6,9 @@
           <div class="avatar-container">
             <img :src="item.target_user.avatar"/>
           </div>
+          <template v-if="item.unread_count > 0">
+            <div class="avatar-red-dot"></div>
+          </template>
         </div>
         <div class="right-group">
           <div class="header-container">
@@ -14,7 +17,12 @@
             <div class="datetime">{{item.timeStr}}</div>
           </div>
           <div class="content-container">
-            {{item.last_message.text}}
+            <div class="message-container">{{item.last_message.text}}</div>
+            <template v-if="item.unread_count > 0">
+              <div class="unread-count-container">
+                <div class="unread-count">{{item.unread_count}}</div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
@@ -178,6 +186,7 @@
     .left-group {
       width: 20%;
       height: 100%;
+      position: relative;
 
       .avatar-container {
         width: 100%;
@@ -189,6 +198,18 @@
           border-radius: 100%;
           object-fit: cover;
         }
+      }
+
+      .avatar-red-dot {
+        display: inline-block;
+        background-color: red;
+        width: 10px;
+        height: 10px;
+        border-radius: 100%;
+
+        position: absolute;
+        right: 5px;
+        top: 0;
       }
     }
     .right-group {
@@ -210,11 +231,34 @@
         }
       }
       .content-container {
-        font-size: 12px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        width: 100%;
+        display: flex;
+
+        .message-container {
+          flex: 1;
+          font-size: 12px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .unread-count-container {
+          display: flex;
+          align-items: center;
+
+          .unread-count {
+            height: 14px;
+            line-height: 14px;
+            padding: 0 4px;
+            background-color: red;
+            color: #fff;
+            border-radius: 8px;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 10px;
+          }
+        }
       }
+
     }
   }
 </style>
