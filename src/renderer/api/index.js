@@ -71,7 +71,7 @@ export default {
       type: 'private',
       sync_id: syncId,
       start: 0,
-      count: 200,
+      count: 20,
       apikey: '0dad551ec0f84ed02907ff5c42e8ec70',
       os_rom: 'miui6',
       channel: 'Xiaomi_Market',

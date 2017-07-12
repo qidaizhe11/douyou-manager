@@ -14,6 +14,7 @@ const initialMessages = {
   earliestMessageId: null,
   scrollToMessageId: null,
   unreadCount: 0,
+  attachCount: 0,
   isLoadAll: false
 }
 
@@ -49,6 +50,7 @@ const chat = {
         earliestMessageId: null,
         scrollToMessageId: null,
         unreadCount: 0,
+        attachCount: 0,
         isLoadAll: false
       }
       */
@@ -77,6 +79,7 @@ const chat = {
       Object.assign(state, {
         chatList: chatList,
         currentCount: chatList.length,
+        currentPage: 0,
         totalCount: totalCount,
         isLoadAll: chatList.length >= totalCount
       })
@@ -201,11 +204,43 @@ const chat = {
       const messages = state.messagesInChat[chatId]
 
       messages.messageList.push(message)
+      Object.assign(messages, {
+        currentCount: ++messages.currentCount,
+        attachCount: ++messages.attachCount
+      })
     },
-    [types.SYNC_CHAT_MESSAGE_SUCCESS](state, { syncData }) {
+    [types.SYNC_CHAT_MESSAGE_SUCCESS](state, { syncData, messages }) {
       if (syncData && syncData.id && syncData.id !== state.syncId) {
         state.syncId = syncData.id
       }
+
+      messages.map((message, i) => {
+        const chatId = message.conversation_id
+        const chatMessages = state.messagesInChat[chatId]
+
+        if (!chatMessages) {
+          return
+        }
+
+        if (chatMessages.attachCount > 0) {
+          const indexStart = chatMessages.messageList.length - chatMessages.attachCount
+          chatMessages.messageList.splice(indexStart, chatMessages.attachCount)
+          chatMessages.messageList.push(message)
+          Object.assign(chatMessages, {
+            currentCount: chatMessages.currentCount - chatMessages.attachCount + 1,
+            attachCount: 0,
+            latestMessageId: message.id
+          })
+
+          return
+        }
+
+        chatMessages.messageList.push(message)
+        Object.assign(chatMessages, {
+          currentCount: ++chatMessages.currentCount,
+          latestMessageId: message.id
+        })
+      })
     },
     [types.SET_ACTIVE_CHAT_ID](state, { chatId }) {
       state.activeChatId = chatId
@@ -341,7 +376,7 @@ const chat = {
         })
       })
     },
-    [types.FETCH_SYNC_CHAT_MESSAGE]({ commit, state }, options) {
+    [types.FETCH_SYNC_CHAT_MESSAGE]({ commit, state, dispatch }, options) {
       const token = localStorage.getItem('accessToken')
 
       Api.fetchSyncChatMessage({
@@ -350,8 +385,16 @@ const chat = {
       }).then(data => {
         console.log('fetchSyncChatMessage, got data:', data)
 
+        if (data.total > 0 && data.sync.start_id > 0) {
+          dispatch(types.FETCH_GET_CHAT_LIST, {
+            start: 0,
+            count: 30
+          })
+        }
+
         commit(types.SYNC_CHAT_MESSAGE_SUCCESS, {
-          syncData: data.sync
+          syncData: data.sync,
+          messages: data.messages
         })
       })
     },
