@@ -19,15 +19,11 @@
               <div class="avatar-container">
                 <img :src="message.author.avatar"/>
               </div>
-              <div class="content-container">
-                {{message.text}}
-              </div>
+              <div class="content-container">{{message.text}}</div>
             </div>
           </template>
           <template v-else-if="message.isTime">
-            <div class="time-container">
-              {{message.timeStr}}
-            </div>
+            <div class="time-container">{{message.timeStr}}</div>
           </template>
         </template>
       </template>
@@ -290,6 +286,7 @@
         border-radius: 4px;
         padding: 10px 6px;
         font-size: 14px;
+        white-space: pre-wrap;
       }
 
       &-me .content-container {
