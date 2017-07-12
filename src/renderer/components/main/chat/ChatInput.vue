@@ -4,8 +4,8 @@
     <!--<div class="top-container"></div>-->
     <div class="edit-container">
         <textarea class="edit-textarea" ref="editTextarea" rows="3"
-                  :value="cachedMessage" @blur="onTextareaBlur"
-                  @focus="onTextareaFocus" @input="onValueInput">
+                  :value="cachedMessage" @blur="onTextareaBlur" @focus="onTextareaFocus"
+                  @input="onValueInput" @keydown="onKeyDown">
         </textarea>
     </div>
     <div class="bottom-container">
@@ -56,21 +56,21 @@
 
 //        this.value = e.target.value
         const inputValue = e.target.value
-        if (this.chatId) {
-          this.$store.commit(CACHE_CHAT_MESSAGE, {
-            chatId: this.chatId,
-            message: inputValue
-          })
-        }
+        this.onMessageChange(inputValue)
       },
       onSendButtonClick() {
         console.log('ChatInput, onSendButtonClick, value:', this.cachedMessage)
 
-        if (this.cachedMessage && this.chatId) {
-          this.$store.dispatch(FETCH_POST_CHAT_MESSAGE, {
-            chatId: this.chatId,
-            message: this.cachedMessage
-          })
+        this.sendMessage()
+      },
+      onKeyDown(e) {
+        if (e.keyCode === 13) {
+          if (e.ctrlKey) {
+            const value = this.cachedMessage + '\n'
+            this.onMessageChange(value)
+          } else {
+            this.sendMessage()
+          }
         }
       },
       onTextareaBlur() {
@@ -82,6 +82,22 @@
       focusInputTextarea() {
         this.$refs.editTextarea.focus()
         this.isActive = true
+      },
+      onMessageChange(value) {
+        if (this.chatId) {
+          this.$store.commit(CACHE_CHAT_MESSAGE, {
+            chatId: this.chatId,
+            message: value
+          })
+        }
+      },
+      sendMessage() {
+        if (this.cachedMessage && this.chatId) {
+          this.$store.dispatch(FETCH_POST_CHAT_MESSAGE, {
+            chatId: this.chatId,
+            message: this.cachedMessage
+          })
+        }
       }
     },
     watch: {
