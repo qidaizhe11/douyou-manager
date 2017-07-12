@@ -18,14 +18,14 @@ const initialMessages = {
   isLoadAll: false
 }
 
-// const initialCachedMessages = {
-//   chatId: null,
-//   isFetching: false,
-//   error: null,
-//   cachedMessage: '',
-//   failedMessages: [],
-//   count: 0
-// }
+const initialCachedMessages = {
+  chatId: null,
+  isFetching: false,
+  error: null,
+  cachedMessage: '',
+  failedMessages: [],
+  count: 0
+}
 
 const chat = {
   state: {
@@ -208,6 +208,11 @@ const chat = {
         currentCount: ++messages.currentCount,
         attachCount: ++messages.attachCount
       })
+
+      const cachedMessages = state.cachedMessagesInChat[chatId]
+      if (cachedMessages) {
+        cachedMessages.cachedMessage = ''
+      }
     },
     [types.SYNC_CHAT_MESSAGE_SUCCESS](state, { syncData, messages }) {
       if (syncData && syncData.id && syncData.id !== state.syncId) {
@@ -256,6 +261,15 @@ const chat = {
           latestMessageId: ''
         })
       }
+    },
+    [types.CACHE_CHAT_MESSAGE](state, { chatId, message }) {
+      const messageInfoForAssign = {
+        cachedMessage: message
+      }
+      Vue.set(state.cachedMessagesInChat, chatId, {
+        ...initialCachedMessages,
+        ...messageInfoForAssign
+      })
     }
   },
   actions: {
@@ -425,6 +439,15 @@ const chat = {
       }
 
       return state.messagesInChat[chatId]
+    },
+    activeCachedChatMessages(state, getters) {
+      const chatId = state.activeChatId
+
+      if (!chatId || !state.cachedMessagesInChat[chatId]) {
+        return
+      }
+
+      return state.cachedMessagesInChat[chatId]
     }
   }
 }

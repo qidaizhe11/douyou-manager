@@ -3,7 +3,8 @@
        @click="onEditContainerClick">
     <!--<div class="top-container"></div>-->
     <div class="edit-container">
-        <textarea class="edit-textarea" ref="editTextarea" rows="3" @blur="onTextareaBlur"
+        <textarea class="edit-textarea" ref="editTextarea" rows="3"
+                  :value="cachedMessage" @blur="onTextareaBlur"
                   @focus="onTextareaFocus" @input="onValueInput">
         </textarea>
     </div>
@@ -16,11 +17,11 @@
 </template>
 
 <script>
-  import {mapState} from 'vuex'
+  import {mapState, mapGetters} from 'vuex'
   import Vue from 'vue'
   import { Button } from 'element-ui'
 
-  import { FETCH_POST_CHAT_MESSAGE } from 'store/mutation-types'
+  import { FETCH_POST_CHAT_MESSAGE, CACHE_CHAT_MESSAGE } from 'store/mutation-types'
 
   Vue.use(Button)
 
@@ -32,9 +33,19 @@
       }
     },
     computed: {
+      cachedMessage() {
+        if (!this.activeCachedChatMessages) {
+          return ''
+        }
+
+        return this.activeCachedChatMessages.cachedMessage || ''
+      },
       ...mapState({
         chatId: state => state.chat.activeChatId
-      })
+      }),
+      ...mapGetters([
+        'activeCachedChatMessages'
+      ])
     },
     methods: {
       onEditContainerClick() {
@@ -43,15 +54,22 @@
       onValueInput(e) {
         console.log('ChatInput, onValueInput, e:', e, 'value:', e.target.value)
 
-        this.value = e.target.value
+//        this.value = e.target.value
+        const inputValue = e.target.value
+        if (this.chatId) {
+          this.$store.commit(CACHE_CHAT_MESSAGE, {
+            chatId: this.chatId,
+            message: inputValue
+          })
+        }
       },
       onSendButtonClick() {
-        console.log('ChatInput, onSendButtonClick, value:', this.value)
+        console.log('ChatInput, onSendButtonClick, value:', this.cachedMessage)
 
-        if (this.value && this.chatId) {
+        if (this.cachedMessage && this.chatId) {
           this.$store.dispatch(FETCH_POST_CHAT_MESSAGE, {
             chatId: this.chatId,
-            message: this.value
+            message: this.cachedMessage
           })
         }
       },
