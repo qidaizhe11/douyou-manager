@@ -11,8 +11,8 @@ export const doubanApi = {
   postChatMessageOfUserIdUrl(userId) {
     return DOUBAN_API_ROOT + `/api/v2/user/${userId}/chat/create_message`
   },
-  checkNewChatMessagesOfUserIdUrl(userId) {
-    return DOUBAN_API_ROOT + `/api/v2/user/${userId}chat/read_message`
+  readChatMessagesOfUserIdUrl(userId) {
+    return DOUBAN_API_ROOT + `/api/v2/user/${userId}/chat/read_message`
   },
   getFollowingUrl(userId) {
     return DOUBAN_API_ROOT + `/api/v2/user/${userId}/following`

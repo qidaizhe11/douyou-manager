@@ -1,6 +1,7 @@
 import * as types from 'store/mutation-types'
 import Api from 'api'
 import Vue from 'vue'
+import _ from 'lodash'
 
 const initialMessages = {
   chatId: null,
@@ -247,6 +248,15 @@ const chat = {
         })
       })
     },
+    [types.READ_CHAT_MESSAGE_SUCCESS](state, { chatId }) {
+      const chatListItem = state.chatList.find(item => {
+        return item.conversation_id === chatId
+      })
+
+      if (chatListItem) {
+        chatListItem.unread_count = 0
+      }
+    },
     [types.SET_ACTIVE_CHAT_ID](state, { chatId }) {
       state.activeChatId = chatId
     },
@@ -318,12 +328,18 @@ const chat = {
       if (messages && messages.messageList.length > 0) {
         commit(types.LOAD_CHAT_MESSAGES, options)
 
+        const latestMessageId = messages.messageList[messages.messageList.length - 1].id
+        dispatch(types.FETCH_READ_CHAT_MESSAGE, {
+          chatId: options.chatId,
+          latestMessageId
+        })
+
         return
       }
 
       dispatch(types.FETCH_GET_CHAT_MESSAGES, options)
     },
-    [types.FETCH_GET_CHAT_MESSAGES]({ commit, state }, options) {
+    [types.FETCH_GET_CHAT_MESSAGES]({ commit, state, dispatch }, options) {
       const token = localStorage.getItem('accessToken')
       commit(types.GET_CHAT_MESSAGES_REQUEST, {
         chatId: options.chatId
@@ -340,6 +356,14 @@ const chat = {
           chatId: options.chatId,
           requestCount: options.count
         })
+
+        if (data.messages && data.messages.length > 0) {
+          const latestMessageId = data.messages[data.messages.length - 1].id
+          dispatch(types.FETCH_READ_CHAT_MESSAGE, {
+            chatId: options.chatId,
+            latestMessageId
+          })
+        }
       })
     },
     [types.FETCH_GET_CHAT_MESSAGES_MORE]({ commit, state }, options) {
@@ -409,6 +433,38 @@ const chat = {
         commit(types.SYNC_CHAT_MESSAGE_SUCCESS, {
           syncData: data.sync,
           messages: data.messages
+        })
+
+        const activeChatId = state.activeChatId
+        if (data.messages) {
+          const lastMessageOfActiveChatId = _.findLast(data.messages, item => {
+            return item.conversation_id === activeChatId
+          })
+
+          if (lastMessageOfActiveChatId) {
+            dispatch(types.FETCH_READ_CHAT_MESSAGE, {
+              chatId: lastMessageOfActiveChatId.conversation_id,
+              lastMessageId: lastMessageOfActiveChatId.id
+            })
+          }
+        }
+      })
+    },
+    [types.FETCH_READ_CHAT_MESSAGE]({ commit, state }, { chatId, lastMessageId }) {
+      const messages = state.messagesInChat[chatId]
+      if (!lastMessageId) {
+        lastMessageId = messages.latestMessageId
+      }
+
+      const token = localStorage.getItem('accessToken')
+
+      Api.fetchReadChatMessages({
+        userId: chatId,
+        lastMessageId,
+        token
+      }).then(data => {
+        commit(types.READ_CHAT_MESSAGE_SUCCESS, {
+          chatId
         })
       })
     },
