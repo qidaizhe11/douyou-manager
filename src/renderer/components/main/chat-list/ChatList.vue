@@ -116,7 +116,12 @@
 
         function syncMessageTimeout() {
           this.$store.dispatch(FETCH_SYNC_CHAT_MESSAGE)
-          this.timeoutId = setTimeout(syncMessageTimeout.bind(this), 5000)
+          const syncTime = this.syncTime
+          if (syncTime && Date.now() - syncTime < 5 * 60 * 1000) {
+            this.timeoutId = setTimeout(syncMessageTimeout.bind(this), 2000)
+          } else {
+            this.timeoutId = setTimeout(syncMessageTimeout.bind(this), 5000)
+          }
         }
       }
     },
@@ -133,6 +138,7 @@
       ...mapState({
         chatList: state => state.chat.chatList,
         isLoadAll: state => state.chat.isLoadAll,
+        syncTime: state => state.chat.syncTime,
         getChatListRequest: state => state.requests.chat.getChatList,
         getChatListMoreRequest: state => state.requests.chat.getChatListMore
       })

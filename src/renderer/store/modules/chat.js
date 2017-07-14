@@ -37,6 +37,7 @@ const chat = {
     isLoadAll: false,
     activeChatId: '',
     syncId: 0,
+    syncTime: null,
     messagesInChat: {
       /*
       chatId: {
@@ -218,6 +219,7 @@ const chat = {
     [types.SYNC_CHAT_MESSAGE_SUCCESS](state, { syncData, messages }) {
       if (syncData && syncData.id && syncData.id !== state.syncId) {
         state.syncId = syncData.id
+        state.syncTime = new Date(syncData.time)
       }
 
       messages.map((message, i) => {
