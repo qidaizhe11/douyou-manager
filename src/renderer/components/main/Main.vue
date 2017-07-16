@@ -1,21 +1,6 @@
 <template>
   <div class="container">
-    <div class="left-side-container">
-      <div class="top-group">
-        <div class="menu-item-container">
-          <!--<i class="el-icon-edit"></i>-->
-          <icon name="commenting-o"></icon>
-        </div>
-        <div class="menu-item-container">
-          <icon name="address-book"></icon>
-        </div>
-      </div>
-      <div class="bottom-group">
-        <div class="menu-item-container">
-          <icon name="bars"></icon>
-        </div>
-      </div>
-    </div>
+    <LeftSideBar />
     <div class="chat-list-container">
       <ChatList />
     </div>
@@ -33,6 +18,7 @@ import 'vue-awesome/icons'
 
 import Icon from 'vue-awesome/components/Icon'
 
+import LeftSideBar from 'components/LeftSideBar'
 import ChatList from './chat-list/ChatList'
 import Chat from './chat/Chat'
 
@@ -65,6 +51,7 @@ export default {
     // }
   },
   components: {
+    LeftSideBar,
     ChatList,
     Chat
   }

@@ -4,6 +4,7 @@ import Router from 'vue-router'
 // import Markdown from '@/components/Markdown'
 import Login from '@/components/Login'
 import Main from '@/components/main/Main'
+import AutoReply from 'components/auto-reply/AutoReply.vue'
 
 Vue.use(Router)
 
@@ -11,7 +12,8 @@ const debug = process.env.NODE_ENV !== 'production'
 
 const router = new Router({
   routes: [{
-    path: '/',
+    // path: '/',
+    path: '/chat',
     name: 'Main',
     component: Main,
     meta: {
@@ -21,6 +23,14 @@ const router = new Router({
     path: '/login',
     name: 'login',
     component: Login
+  }, {
+    // path: '/autoreply',
+    path: '/',
+    name: 'AutoReply',
+    component: AutoReply,
+    meta: {
+      auth: true
+    }
   }],
   mode: debug ? 'history' : 'hash'
     // mode: 'hash'
