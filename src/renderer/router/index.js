@@ -1,37 +1,56 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-// import Hello from '@/components/Hello'
-// import Markdown from '@/components/Markdown'
-import Login from '@/components/Login'
-import Main from '@/components/main/Main'
+import Root from 'components/Root'
+import Login from 'components/Login'
+import Main from 'components/main/Main'
 import AutoReply from 'components/auto-reply/AutoReply.vue'
+import EditReply from 'components/auto-reply/edit-reply/EditReply.vue'
 
 Vue.use(Router)
 
 const debug = process.env.NODE_ENV !== 'production'
 
 const router = new Router({
-  routes: [{
-    // path: '/',
-    path: '/chat',
-    name: 'Main',
-    component: Main,
-    meta: {
-      auth: true
+  routes: [
+    {
+      path: '/',
+      component: Root,
+      children: [
+        {
+          path: '',
+          redirect: 'reply-edit'
+        },
+        {
+          path: 'chat',
+          name: 'Main',
+          component: Main,
+          meta: {
+            auth: true
+          }
+        },
+        {
+          path: 'reply',
+          name: 'AutoReply',
+          component: AutoReply,
+          meta: {
+            auth: true
+          }
+        },
+        {
+          path: 'reply-edit',
+          component: EditReply,
+          meta: {
+            auth: true
+          }
+        }
+      ]
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
     }
-  }, {
-    path: '/login',
-    name: 'login',
-    component: Login
-  }, {
-    // path: '/autoreply',
-    path: '/',
-    name: 'AutoReply',
-    component: AutoReply,
-    meta: {
-      auth: true
-    }
-  }],
+  ],
   mode: debug ? 'history' : 'hash'
     // mode: 'hash'
 })

@@ -1,11 +1,10 @@
 <template>
   <div class="container">
-    <LeftSideBar />
     <div class="chat-list-container">
-      <ChatList />
+      <ChatList/>
     </div>
     <div class="chat-container">
-      <Chat />
+      <Chat/>
     </div>
   </div>
 </template>
@@ -18,7 +17,6 @@ import 'vue-awesome/icons'
 
 import Icon from 'vue-awesome/components/Icon'
 
-import LeftSideBar from 'components/LeftSideBar'
 import ChatList from './chat-list/ChatList'
 import Chat from './chat/Chat'
 
@@ -51,7 +49,6 @@ export default {
     // }
   },
   components: {
-    LeftSideBar,
     ChatList,
     Chat
   }
