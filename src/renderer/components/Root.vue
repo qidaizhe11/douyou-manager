@@ -6,7 +6,13 @@
 </template>
 
 <script>
+  import Vue from 'vue'
+  import 'vue-awesome/icons'
+  import Icon from 'vue-awesome/components/Icon'
+
   import LeftSideBar from 'components/LeftSideBar'
+
+  Vue.component('icon', Icon)
 
   export default {
     data() {
@@ -25,6 +31,8 @@
     width: 100%;
     height: 100%;
     display: flex;
+
+    min-width: 500px;
   }
 
   .view {

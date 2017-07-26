@@ -35,6 +35,7 @@
   .container {
     height: 100%;
     width: 55px;
+    min-width: 55px;
     background-color: $background-color;
     display: flex;
     flex-wrap: wrap;
@@ -61,6 +62,9 @@
     }
     .fa-icon {
       color: white;
+      $icon-size: 20px;
+      width: $icon-size;
+      height: $icon-size;
     }
   }
 </style>
